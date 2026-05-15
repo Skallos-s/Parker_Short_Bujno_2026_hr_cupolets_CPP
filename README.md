@@ -1,0 +1,2 @@
+# Parker_Short_Bujno_2026_hr_cupolets_CPP
+Minor project research
