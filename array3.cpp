@@ -5,6 +5,7 @@
 #include "array3.h"
 #include <stdexcept>
 #include <iostream>
+#include <iomanip>
 
 // Constructor
 array3::array3(double xp, double yp, double zp) {
@@ -114,5 +115,5 @@ void operator/=(array3 &a1, const double f) {
 
 // Stream output
 std::ostream& operator<<(std::ostream &out, const array3 &a1) {
-	return out << "[" << a1.x << ", " << a1.y << ", " << a1.z << "]";
+	return out << std::setprecision(18) << "[" << a1.x << ", " << a1.y << ", " << a1.z << "]";
 }

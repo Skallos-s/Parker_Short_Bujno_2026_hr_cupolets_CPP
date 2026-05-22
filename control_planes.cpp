@@ -23,8 +23,10 @@
 // Reads in neuron, dt, and directory direc.
 // Generates all related Poincare surface information
 // through various functions and plots that are stored in direc.
-void find_surfaces(hindmarsh_rose neuron, double dt, double percent, const std::string direc) {
+void find_surfaces(hindmarsh_rose &neuron, double dt, double percent, const std::string direc) {
+	
 	std::cout << "Generating Poincare surfaces and corresponding intersections..." << std::endl;
+	
 	// Define directory name for storing control plane data
 	std::string store_direc = direc + "/control_planes";
 	
@@ -33,17 +35,17 @@ void find_surfaces(hindmarsh_rose neuron, double dt, double percent, const std::
 	
 	// Read in data
 	std::vector<double> t, x, y, z;
-	loadtxt(t, x, y, z, direc + "/hr_system/hr_time_series.txt");
+	loadtxt_4(t, x, y, z, direc + "/hr_system/hr_time_series.txt");
 	
 	// Find index for percent data remaining
 	int start = static_cast<int>(round((1 - percent / 100) * (t.size())));
 	
 	// Redefine data for percent data
 	if (start > 0) {
-		t.erase(t.begin(), t.begin() + start - 1);
-		x.erase(x.begin(), x.begin() + start - 1);
-		y.erase(y.begin(), y.begin() + start - 1);
-		z.erase(z.begin(), z.begin() + start - 1);
+		t.erase(t.begin(), t.begin() + start);
+		x.erase(x.begin(), x.begin() + start);
+		y.erase(y.begin(), y.begin() + start);
+		z.erase(z.begin(), z.begin() + start);
 	}
 	
 	// Find indicies of peaks for x time series - used for PS1
@@ -112,7 +114,7 @@ void find_surfaces(hindmarsh_rose neuron, double dt, double percent, const std::
 
 // Function that reads in x y z values, a peak array, and plane indicator ps.
 // Returns a matrix containing the x y z values of either PS1 values (ps = 1) or PS0 values (ps = 0)
-std::vector<array3> ps_verts(std::vector<double> vec_x, std::vector<double> vec_y, std::vector<double> vec_z, std::vector<unsigned int> peaks, int ps) {
+std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &vec_y, std::vector<double> &vec_z, std::vector<unsigned int> &peaks, int ps) {
 	
 	std::vector<array3> verts;
 	
@@ -132,10 +134,10 @@ std::vector<array3> ps_verts(std::vector<double> vec_x, std::vector<double> vec_
 	for (unsigned int i = 0; i < vec_y.size(); i++) {
 		ypmin = std::min(ypmin, vec_y[i]);
 		ypmax = std::max(ypmax, vec_y[i]);
-		yavg += vec_y[i];
+		yavg += (vec_y[i] - yavg) / (i+1);
 	}
+	std::cout << std::scientific << std::setprecision(18) << yavg << " " << vec_y.size() << std::endl;
 	
-	yavg /= vec_y.size();
 	
 	// Min and max of z peaks
 	for (unsigned int i = 0; i < vec_z.size(); i++) {
@@ -147,6 +149,12 @@ std::vector<array3> ps_verts(std::vector<double> vec_x, std::vector<double> vec_
 	double x_ext = 0.05 * std::abs(xpmax - xpmin);
 	double y_ext = 0.05 * std::abs(ypmax - ypmin);
 	double z_ext = 0.01 * std::abs(zpmax - zpmin);
+	
+	std::cout << "############" << std::scientific << std::setprecision(18) << std::endl;
+	std::cout << xpmin << " " << xpmax << " " << x_ext << std::endl;
+	std::cout << ypmin << " " << ypmax << " " << y_ext << std::endl;
+	std::cout << zpmin << " " << zpmax << " " << z_ext << std::endl;
+	std::cout << yavg << std::endl;
 	
 	if (ps == 0) {
 		// Establish PS0 values
@@ -163,7 +171,7 @@ std::vector<array3> ps_verts(std::vector<double> vec_x, std::vector<double> vec_
 // Reads in time series t,x,y,z, vertex data for surfaces 0 and 1, as well as neural system neuron.
 // Returns list of point of all crossings of PS0 and PS1 as t,x,y,z,PS where PS = 1 for PS1 or 0 for
 // PS0. Uses Henon's trick to integrate exactly onto surface.
-std::vector<std::vector<double>> ps_points(std::vector<double> t, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<array3> verts0, std::vector<array3> verts1, hindmarsh_rose neuron) {
+std::vector<std::vector<double>> ps_points(std::vector<double> &t, std::vector<double> &x, std::vector<double> &y, std::vector<double> &z, std::vector<array3> &verts0, std::vector<array3> &verts1, hindmarsh_rose &neuron) {
 	
 	// Array to be filled with pts on contro plane
 	std::vector<std::vector<double>> pts;
@@ -196,7 +204,7 @@ std::vector<std::vector<double>> ps_points(std::vector<double> t, std::vector<do
 
 // Reads in points x_n, x_n1, y_n, y_n1 and using surface ps (indicates which plane, 0 or 1) with
 // vertices verts, checks to see if pts are on opposite sides of the surface
-bool crossed(double x_n, double x_n1, double y_n, double y_n1, int ps, std::vector<array3> verts) {
+bool crossed(double x_n, double x_n1, double y_n, double y_n1, int ps, std::vector<array3> &verts) {
 	// Check for crossing PS1
 	if (ps == 1) {
 		// Change of signs in y direction indicates crossing PS1

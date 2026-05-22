@@ -11,7 +11,10 @@
 #include <vector>
 
 // Load data from text file
-void loadtxt(std::vector<double> &vec_t, std::vector<double> &vec_x, std::vector<double> &vec_y, std::vector<double> &vec_z, const std::string file_path);
+void loadtxt_4(std::vector<double> &vec_t, std::vector<double> &vec_x, std::vector<double> &vec_y, std::vector<double> &vec_z, const std::string file_path);
+void loadtxt_3(std::vector<double> &psx, std::vector<double> &psy, std::vector<double> &psz, const std::string file_path);
+void loadtxt_1(std::vector<std::vector<double>> &pts, const std::string file_path);
+void loadtxt_poly(std::vector<double> &poly_coords, const std::string file_path);
 
 // Find local maxima of vector
 // Returns vector of indices
@@ -21,15 +24,20 @@ std::vector<unsigned int> find_peaks(std::vector<double> &vec);
 std::vector<unsigned int> find_mid_peaks(std::vector<double> &vec);
 
 // Write 2D array to file
-// std::vector<array3> data has only 2 array3s
 // std::vector<std::vector<double>> data contains vector<double> of length 5 (t x y z ps)
-void save_array3_vector(std::vector<array3> data, const std::string header, const std::string location);
-void save_vector_vector(std::vector<std::vector<double>> data, const std::string header, const std::string location);
+void save_array3_vector(std::vector<array3> &data, const std::string header, const std::string location);
+void save_vector_vector(std::vector<std::vector<double>> &data, const std::string header, const std::string location);
+void save_double_vector(std::vector<double> &poly_coords, const std::string header, const std::string location);
+void save_binary(std::vector<std::vector<unsigned int>> &map, const std::string header, const std::string location);
 
 // Signum function
 // From https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
+
+// Evaluate a polynomial with ax^n+...+b where poly_coords=<a,...,b>
+double eval_poly(std::vector<double> &poly_coords, double x);
+
 
 #endif

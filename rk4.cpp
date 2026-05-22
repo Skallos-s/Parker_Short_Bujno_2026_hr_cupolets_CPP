@@ -10,18 +10,18 @@
 
 // Runge-Kutta in a state x, time step dt, and dynamics function f.
 // Performs autonomous RK4 method and returns next iteration
-array3 rk4(array3 x, double dt, array3 (*f)(array3)) {
-	array3 k1 = dt * f(x);
-	array3 k2 = dt * f(x + k1 / 2);
-	array3 k3 = dt * f(x + k2 / 2);
-	array3 k4 = dt * f(x + k3);
+array3 rk4(array3 x, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr) {
+	array3 k1 = dt * (hr.*f)(x);
+	array3 k2 = dt * (hr.*f)(x + k1 / 2);
+	array3 k3 = dt * (hr.*f)(x + k2 / 2);
+	array3 k4 = dt * (hr.*f)(x + k3);
 	return x + (k1 + 2 * k2 + 2 * k3 + k4) / 6;
 }
 
 // Perform Henon's trick with RK4 method. xi is the initial state after varying
 // array to insert independent variable before the trick. ti is the state of Henon's
 // independent variable. dd is the distance to travel and f is the dynamics for Henon's trick.
-std::vector<double> rk4_henon(array3 xi, double ti, double dd, array3 (hindmarsh_rose::*f)(array3, double) const, hindmarsh_rose hr) {
+std::vector<double> rk4_henon(array3 xi, double ti, double dd, array3 (hindmarsh_rose::*f)(array3, double) const, hindmarsh_rose &hr) {
 	array3 k1 = dd * (hr.*f)(xi         , ti);
 	array3 k2 = dd * (hr.*f)(xi + k1 / 2, ti + dd / 2);
 	array3 k3 = dd * (hr.*f)(xi + k2 / 2, ti + dd / 2);
