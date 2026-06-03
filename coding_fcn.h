@@ -13,7 +13,7 @@
 
 // Read in HR neuron, dt, direc directory to store files, the number of iterations for the coding
 // function to store and the number of bins to parse each poincare surface
-void coding_fcn(hindmarsh_rose &neuron, const std::string direc, std::string bin_rn_direc, double dt = 1.0/128, unsigned int coding_fcn_N = 16, unsigned int bins = 1600, bool generate_poly = false);
+void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt = 1.0/128, unsigned int coding_fcn_N = 16, unsigned int bins = 1600, bool generate_poly = false);
 
 // For surface PS reads in x vertex values psx, y vertex values psy and polynmoial fit poly_coords,
 // and bins to generate the bin spacing, midpoints, and initial data for evaluation 

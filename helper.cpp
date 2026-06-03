@@ -84,6 +84,39 @@ void loadtxt_3(std::vector<double> &psx, std::vector<double> &psy, std::vector<d
 	return;
 }
 
+// Load data from text file into 2 vectors
+void loadtxt_2(std::vector<unsigned int> &index, std::vector<unsigned int> &ps, const std::string file_path) {
+	
+	std::ifstream file;
+	std::string line;
+	std::istringstream i_line;
+	
+	double ind, psv;
+	
+	// Load file
+	file.open(file_path);
+	
+	if (file.is_open()) {
+		// Read file
+		while (getline(file, line)) {
+			if (line[0] == '#') continue;
+			
+			i_line.clear();
+			i_line.str(line);
+			
+			if (i_line >> ind >> psv) {
+				index.push_back(ind);
+				ps.push_back(psv);
+			} else {
+				std::cout << "Error Reading Line " << line << std::endl; 
+			}
+		}
+		file.close();
+	}
+	
+	return;
+}
+
 // Load data from text file into vector of vector<doubles>
 void loadtxt_1(std::vector<std::vector<double>> &pts, const std::string file_path) {
 	
@@ -122,14 +155,14 @@ void loadtxt_1(std::vector<std::vector<double>> &pts, const std::string file_pat
 	return;
 }
 
-// Load polynomial coordinate data from text file into vector of doubles
-void loadtxt_poly(std::vector<double> &poly_coords, const std::string file_path) {
+// Load data from text file into vector of vector<array3>
+void loadtxt_1(std::vector<array3> &pts, const std::string file_path) {
 	
 	std::ifstream file;
 	std::string line;
 	std::istringstream i_line;
 	
-	double pc;
+	double vx, vy, vz;
 	
 	// Load file
 	file.open(file_path);
@@ -142,8 +175,72 @@ void loadtxt_poly(std::vector<double> &poly_coords, const std::string file_path)
 			i_line.clear();
 			i_line.str(line);
 			
-			if (i_line >> pc) {
-				poly_coords.push_back(pc);
+			if (i_line >> vx >> vy >> vz) {
+				pts.push_back(array3(vx, vy, vz));
+			} else {
+				std::cout << "Error Reading Line " << line << std::endl; 
+			}
+		}
+		file.close();
+	}
+	
+	return;
+}
+
+// Load data from text file into vector of doubles
+void loadtxt_1(std::vector<double> &data, const std::string file_path) {
+	
+	std::ifstream file;
+	std::string line;
+	std::istringstream i_line;
+	
+	double vx;
+	
+	// Load file
+	file.open(file_path);
+	
+	if (file.is_open()) {
+		// Read file
+		while (getline(file, line)) {
+			if (line[0] == '#') continue;
+			
+			i_line.clear();
+			i_line.str(line);
+			
+			if (i_line >> vx) {
+				data.push_back(vx);
+			} else {
+				std::cout << "Error Reading Line " << line << std::endl; 
+			}
+		}
+		file.close();
+	}
+	
+	return;
+}
+
+// Load polynomial coordinate data from text file into vector of unsigned ints
+void loadtxt_1(std::vector<unsigned int> &data, const std::string file_path) {
+	
+	std::ifstream file;
+	std::string line;
+	std::istringstream i_line;
+	
+	double vx;
+	
+	// Load file
+	file.open(file_path);
+	
+	if (file.is_open()) {
+		// Read file
+		while (getline(file, line)) {
+			if (line[0] == '#') continue;
+			
+			i_line.clear();
+			i_line.str(line);
+			
+			if (i_line >> vx) {
+				data.push_back(vx);
 			} else {
 				std::cout << "Error Reading Line " << line << std::endl; 
 			}
@@ -227,7 +324,7 @@ void save_array3_vector(std::vector<array3> &data, const std::string header, con
 }
 
 // Write 2D array to file
-// data contains vector<double> of length 5 (t x y z ps)
+// data contains vector<double> of fixed length (t x y z (ps))
 void save_vector_vector(std::vector<std::vector<double>> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
@@ -235,23 +332,46 @@ void save_vector_vector(std::vector<std::vector<double>> &data, const std::strin
 	file << std::scientific;
 	file << std::setprecision(18); // double precision
 	for (unsigned int i = 0; i < data.size(); i++) {
-		for (int j = 0; j < 4; j++) {
+		for (unsigned int j = 0; j + 1 < data[i].size(); j++) {
 			file << data[i][j] << "\t";
 		}
-		file << data[i][4] << std::endl;
+		file << data[i][data[i].size() - 1] << std::endl;
+	}
+	file.close();
+}
+
+// Write 2D array to file
+// data contains vector<unsigned int> of length 2 (t ps)
+void save_vector_unsigned_int(std::vector<std::vector<unsigned int>> &data, const std::string header, const std::string location) {
+	std::ofstream file;
+	file.open(location);
+	file << "# " << header << std::endl;
+	for (unsigned int i = 0; i < data.size(); i++) {
+		file << data[i][0] << "\t" << data[i][1] << std::endl;
 	}
 	file.close();
 }
 
 // Write 1d array to file
-void save_double_vector(std::vector<double> &poly_coords, const std::string header, const std::string location) {
+void save_double_vector(std::vector<double> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
 	file << "# " << header << std::endl;
 	file << std::scientific;
 	file << std::setprecision(18); // double precision
-	for (unsigned int i = 0; i < poly_coords.size(); i++) {
-		file << poly_coords[i] << std::endl;
+	for (unsigned int i = 0; i < data.size(); i++) {
+		file << data[i] << std::endl;
+	}
+	file.close();
+}
+
+// Write 1d array to file
+void save_uint_vector(std::vector<unsigned int> &data, const std::string header, const std::string location) {
+	std::ofstream file;
+	file.open(location);
+	file << "# " << header << std::endl;
+	for (unsigned int i = 0; i < data.size(); i++) {
+		file << data[i] << std::endl;
 	}
 	file.close();
 }

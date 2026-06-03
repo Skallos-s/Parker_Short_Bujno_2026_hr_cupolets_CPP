@@ -16,7 +16,7 @@ TARGET = TEST.exe
 TARGET_DEL = TEST.exe
 
 # Source files
-SRCS = TEST_MAIN.cpp array3.cpp hindmarsh_rose.cpp keep_data.cpp control_planes.cpp helper.cpp rk4.cpp coding_fcn.cpp
+SRCS = TEST_MAIN.cpp array3.cpp hindmarsh_rose.cpp keep_data.cpp control_planes.cpp helper.cpp rk4.cpp coding_fcn.cpp microcontrol.cpp macrocontrol.cpp cupolet_search.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

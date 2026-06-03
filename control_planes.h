@@ -18,7 +18,7 @@
 // Reads in neuron, dt, and directory direc.
 // Generates all related Poincare surface information
 // through various functions and plots that are stored in direc.
-void find_surfaces(hindmarsh_rose &neuron, double dt = 1.0/128, double percent = 75.0, const std::string direc = "save_direct");
+void find_surfaces(hindmarsh_rose &neuron, double percent = 75.0, const std::string direc = "save_direct");
 
 // Function that reads in x y z values, a peak array, and plane indicator ps.
 // Returns a matrix containing the x y z values of either PS1 values (ps = 1) or PS0 values (ps = 0)

@@ -23,12 +23,12 @@
 // Reads in neuron, dt, and directory direc.
 // Generates all related Poincare surface information
 // through various functions and plots that are stored in direc.
-void find_surfaces(hindmarsh_rose &neuron, double dt, double percent, const std::string direc) {
+void find_surfaces(hindmarsh_rose &neuron, double percent, const std::string direc) {
 	
 	std::cout << "Generating Poincare surfaces and corresponding intersections..." << std::endl;
 	
 	// Define directory name for storing control plane data
-	std::string store_direc = direc + "/control_planes";
+	const std::string store_direc = direc + "/control_planes";
 	
 	// Create control plane directory if it does not exist
 	check_direc(store_direc);
@@ -92,7 +92,7 @@ void find_surfaces(hindmarsh_rose &neuron, double dt, double percent, const std:
 	}
     
 	// Slightly extend the y range by 50%
-    double ypinc = std::abs(ypmax - ypmin) * 0.50;
+    double ypinc = abs_diff(ypmax , ypmin) * 0.50;
 	
 	// Replace y values of PS0 with augmented ones
     verts0[0].set(1, ypmin - ypinc);
@@ -136,8 +136,6 @@ std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &ve
 		ypmax = std::max(ypmax, vec_y[i]);
 		yavg += (vec_y[i] - yavg) / (i+1);
 	}
-	std::cout << std::scientific << std::setprecision(18) << yavg << " " << vec_y.size() << std::endl;
-	
 	
 	// Min and max of z peaks
 	for (unsigned int i = 0; i < vec_z.size(); i++) {
@@ -146,15 +144,9 @@ std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &ve
 	}
 	
 	// Increase x y z endpoints
-	double x_ext = 0.05 * std::abs(xpmax - xpmin);
-	double y_ext = 0.05 * std::abs(ypmax - ypmin);
-	double z_ext = 0.01 * std::abs(zpmax - zpmin);
-	
-	std::cout << "############" << std::scientific << std::setprecision(18) << std::endl;
-	std::cout << xpmin << " " << xpmax << " " << x_ext << std::endl;
-	std::cout << ypmin << " " << ypmax << " " << y_ext << std::endl;
-	std::cout << zpmin << " " << zpmax << " " << z_ext << std::endl;
-	std::cout << yavg << std::endl;
+	double x_ext = 0.05 * abs_diff(xpmax , xpmin);
+	double y_ext = 0.05 * abs_diff(ypmax , ypmin);
+	double z_ext = 0.01 * abs_diff(zpmax , zpmin);
 	
 	if (ps == 0) {
 		// Establish PS0 values

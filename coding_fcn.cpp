@@ -13,18 +13,16 @@
 #include <string>
 #include <vector>
 #include <iostream>
-
-
 #include <iomanip>
 
 // Read in HR neuron, dt, direc directory to store files, the number of iterations for the coding
 // function to store and the number of bins to parse each poincare surface
-void coding_fcn(hindmarsh_rose &neuron, const std::string direc, std::string bin_rn_direc, double dt, unsigned int coding_fcn_N, unsigned int bins, bool generate_poly) {
+void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt, unsigned int coding_fcn_N, unsigned int bins, bool generate_poly) {
 	
 	std::cout << "Generating coding functions..." << std::endl;
 	
 	// Directory to store all coding function data
-	std::string store_direc = bin_rn_direc + "/coding_fcn";
+	const std::string store_direc = bin_rn_direc + "/coding_fcn";
 	
 	// Create control plane directory if it does not exist
 	check_direc(store_direc);
@@ -54,8 +52,8 @@ void coding_fcn(hindmarsh_rose &neuron, const std::string direc, std::string bin
 		save_double_vector(ps0_p, "Coefficients of approximating polynomial for PS0 (first is coefficient of highest degree).", store_direc + "/ps0_poly_coeffs.txt");
 		save_double_vector(ps1_p, "Coefficients of approximating polynomial for PS1 (first is coefficient of highest degree).", store_direc + "/ps1_poly_coeffs.txt");
 	} else {
-		loadtxt_poly(ps0_p, store_direc + "/ps0_poly_coeffs.txt");
-		loadtxt_poly(ps1_p, store_direc + "/ps1_poly_coeffs.txt");
+		loadtxt_1(ps0_p, store_direc + "/ps0_poly_coeffs.txt");
+		loadtxt_1(ps1_p, store_direc + "/ps1_poly_coeffs.txt");
 	}
 	
 	// Generate the end points, middle, and correspoding x y z values of each midpoint for both planes
@@ -171,28 +169,26 @@ void gen_crossing_sequence(std::vector<double> &rmap, std::vector<std::vector<un
 		map.push_back(row);
 	}
 	
+	// Temporary initialization
+	std::vector<array3> verts0;
+	std::vector<array3> verts1;
+		
+	// Fill temp vector with values
+	verts0.push_back(array3(ps0x[0], ps0y[0], 0));
+	verts0.push_back(array3(ps0x[1], ps0y[1], 0));
+	verts1.push_back(array3(ps1x[0], ps1y[0], 0));
+	verts1.push_back(array3(ps1x[1], ps1y[1], 0));
+	
 	// Loop through each initial condition of each bin
 	for (unsigned int i = 0; i < bins; i++) {
 		// Start with 0 crossings and the initial condition is the middle of the bin
 		unsigned int cross = 0;
 		array3 curr = x[i];
 		
-		// Temporary initialization
-		std::vector<array3> verts0;
-		std::vector<array3> verts1;
-		
-		if (i % 100 == 0) {std::cout << i << std::endl;}
-		
 		// Continue collecting crossings until N are found
 		while (cross < N) {
 			// Integrate one step forward
 			array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
-			
-			// Fill temp vector with values
-			verts0.push_back(array3(ps0x[0], ps0y[0], 0));
-			verts0.push_back(array3(ps0x[1], ps0y[1], 0));
-			verts1.push_back(array3(ps1x[0], ps1y[0], 0));
-			verts1.push_back(array3(ps1x[1], ps1y[1], 0));
 			
 			// Check if PS0 has been crossed
 			if (crossed(curr.get(0), next.get(0), curr.get(1), next.get(1), 0, verts0)) {
