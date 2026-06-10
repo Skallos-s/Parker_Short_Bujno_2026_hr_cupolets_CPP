@@ -10,13 +10,13 @@ CXX = g++
 CXXFLAGS = -Wall -g
 
 # Target executable
-TARGET = TEST.exe
+TARGET = GENERATE.exe
 
 # For deleting the target
-TARGET_DEL = TEST.exe
+TARGET_DEL = GENERATE.exe
 
 # Source files
-SRCS = TEST_MAIN.cpp array3.cpp hindmarsh_rose.cpp keep_data.cpp control_planes.cpp helper.cpp rk4.cpp coding_fcn.cpp microcontrol.cpp macrocontrol.cpp cupolet_search.cpp
+SRCS = GENERATE_DATA.cpp array3.cpp hindmarsh_rose.cpp keep_data.cpp control_planes.cpp helper.cpp rk4.cpp coding_fcn.cpp microcontrol.cpp macrocontrol.cpp cupolet_search.cpp time_series.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

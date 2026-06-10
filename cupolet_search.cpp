@@ -16,7 +16,7 @@
 
 // Finds all cupolets with given ctrl sequence of length less than limit, that star ton PS1 plane.
 // Returns vector of cupolets. Each cupolet is a vector of pairs {index, ps}.
-std::vector<std::vector<std::vector<unsigned int>>> find_cupolets(std::vector<unsigned int> &ctrl, std::string bin_rn_direc, unsigned int limit) {
+std::vector<std::vector<std::vector<unsigned int>>> find_cupolets(std::vector<unsigned int> &ctrl, const std::string bin_rn_direc, unsigned int limit) {
 	// Read in PS0/PS1 micro/macro control maps.
 	// ps0ps and ps1ps are ps columns in ps0micro and ps1micro respectively.
 	std::vector<unsigned int> ps0micro, ps1micro, ps0macro, ps1macro, ps0ps, ps1ps;
@@ -208,7 +208,7 @@ std::vector<std::vector<double>> cupolet_time_series(hindmarsh_rose &neuron, dou
 				t = tyzxp[0];
 				
 				// Store ending position into time series
-				std::vector<double> row{t, next.get(0), next.get(1), next.get(2)};
+				std::vector<double> row{t, tyzxp[3], tyzxp[1], tyzxp[2]};
 				time_series.push_back(row);
 				
 				// Check if PS1 has been crossed
@@ -223,7 +223,7 @@ std::vector<std::vector<double>> cupolet_time_series(hindmarsh_rose &neuron, dou
 				t = txzyp[0];
 				
 				// Store ending position into time series
-				std::vector<double> row{t, next.get(0), next.get(1), next.get(2)};
+				std::vector<double> row{t, txzyp[1], txzyp[3], txzyp[2]};
 				time_series.push_back(row);
 			} else {
 				// Move time forward

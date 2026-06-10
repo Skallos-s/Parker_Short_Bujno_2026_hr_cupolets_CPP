@@ -24,7 +24,7 @@ void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::stri
 	// Directory to store all coding function data
 	const std::string store_direc = bin_rn_direc + "/coding_fcn";
 	
-	// Create control plane directory if it does not exist
+	// Create coding function directory if it does not exist
 	check_direc(store_direc);
 	
 	// Read in PS1 and PS0 vertices

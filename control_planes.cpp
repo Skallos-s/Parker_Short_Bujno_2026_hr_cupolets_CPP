@@ -17,7 +17,6 @@
 #include <iostream>
 #include <experimental/filesystem>
 
-
 #include <iomanip>
 
 // Reads in neuron, dt, and directory direc.
@@ -130,14 +129,14 @@ std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &ve
 		xpmax = std::max(xpmax, vec_x[peaks[i]]);
 	}
 	
-	// Min and max of y peaks
+	// Min and max of y values
 	for (unsigned int i = 0; i < vec_y.size(); i++) {
 		ypmin = std::min(ypmin, vec_y[i]);
 		ypmax = std::max(ypmax, vec_y[i]);
-		yavg += (vec_y[i] - yavg) / (i+1);
+		yavg += (vec_y[i] - yavg) / (i+1); // Iterative (accurate) average
 	}
 	
-	// Min and max of z peaks
+	// Min and max of z values
 	for (unsigned int i = 0; i < vec_z.size(); i++) {
 		zpmin = std::min(zpmin, vec_z[i]);
 		zpmax = std::max(zpmax, vec_z[i]);
