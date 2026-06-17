@@ -10,6 +10,7 @@
 class array3 {
 public:
 	// Constructor
+	array3();
 	array3(double xp, double yp, double zp);
 	
 	// Getter

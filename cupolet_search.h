@@ -17,6 +17,13 @@ std::vector<std::vector<std::vector<unsigned int>>> find_cupolets(std::vector<un
 // Generates cupolet based off of control. Reads in neuron state, dt, number of bins and
 // crossings, control sequence, number of iterations, directory to pull info, and ctrl0,ctrl1 arrays
 // that tell how to implement macrocontrol. Returns time series of cupolet.
-std::vector<std::vector<double>> cupolet_time_series(hindmarsh_rose &neuron, double dt, unsigned int bins, std::vector<std::vector<unsigned int>> cupolet, const std::string direc, const std::string bin_rn_direc);
+std::vector<std::vector<double>> cupolet_time_series(hindmarsh_rose &neuron, double dt, unsigned int bins, std::vector<std::vector<unsigned int>> cupolet, const std::string direc, const std::string bin_rn_direc, bool split_planes = false, double BEZIER_STRENGTH = 0.5);
+
+// Generates cupolet based off of control. Reads in neuron state, dt, number of bins and
+// crossings, control sequence, number of iterations, directory to pull info, and ctrl0,ctrl1 arrays
+// that tell how to implement macrocontrol. Returns time series of cupolet.
+// Jumps from PS2a plane to PS2b plane according to 
+//std::vector<std::vector<double>> cupolet_time_series_jump(hindmarsh_rose &neuron, double dt, unsigned int bins, std::vector<std::vector<unsigned int>> cupolet, const std::string direc, const std::string bin_rn_direc);
+
 
 #endif

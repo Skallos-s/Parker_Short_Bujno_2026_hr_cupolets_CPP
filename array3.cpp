@@ -7,6 +7,9 @@
 #include <iostream>
 #include <iomanip>
 
+// Default Constructor
+array3::array3() {}
+
 // Constructor
 array3::array3(double xp, double yp, double zp) {
 	x = xp;

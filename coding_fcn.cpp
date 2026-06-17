@@ -89,10 +89,8 @@ void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::stri
 	save_binary(map0, "Symbolic future crossings of PS0 for each bin.", store_direc + "/ps0_rn_map_fcn.txt");
 	save_binary(map1, "Symbolic future crossings of PS1 for each bin.", store_direc + "/ps1_rn_map_fcn.txt");
 	
-	
 	return;
 }
-
 
 // For surface PS reads in x vertex values psx, y vertex values psy and polynmoial fit poly_coords,
 // and bins to generate the bin spacing, midpoints, and initial data for evaluation 
@@ -221,6 +219,105 @@ void gen_crossing_sequence(std::vector<double> &rmap, std::vector<std::vector<un
 	
 	return;
 }
+
+
+// Reads in neuron object, direc directory, number of bins bins, and time step dt.
+// Generates the initial points of the PS2b bins.
+void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt, unsigned int bins) {
+	
+	std::cout << "Creating PS2 bin data..." << std::endl;
+	
+	// Directory where to store PS2 bin data
+	const std::string store_direc = bin_rn_direc + "/coding_fcn";
+	
+	// Create the directory if it does not exist
+	check_direc(store_direc);
+	
+	// Read in the PS1 control plane initial conditions
+	std::vector<array3> ps1inits;
+	loadtxt_1(ps1inits, bin_rn_direc + "/coding_fcn/ps1_bin_inits.txt");
+	
+	// Read in the PS1 control plane endpoints
+	std::vector<double> ps1endpts;
+	loadtxt_1(ps1endpts, bin_rn_direc + "/coding_fcn/ps1_bin_endpoints.txt");
+	
+	// Read in the vertices of the PS1 and PS2 control planes
+	std::vector<double> ps2x, ps2y, ps2z;
+	loadtxt_3(ps2x, ps2y, ps2z, direc + "/control_planes/ps2_vertices.txt");
+	
+	// Plane data used for checking crossing
+	std::vector<array3> verts2b;
+	
+	// Fill plane data with values
+	verts2b.push_back(array3(ps2x[2], ps2y[2], ps2z[2]));
+	verts2b.push_back(array3(ps2x[3], ps2y[3], ps2z[3]));
+	
+	// PS2b bin initial points
+	std::vector<array3> ps2b_inits;
+	
+	// Travel time between PS1 and PS2b
+	std::vector<double> ps2b_time;
+	
+	// Previous point prior to crossing PS2b
+	std::vector<array3> ps2b_prev;
+	
+	// Step forward ps1inits to find ps2b_inits
+	for (unsigned int i = 0; i < bins; i++) {
+		// Initial point 
+		array3 curr = ps1inits[i];
+		
+		// Contiue to integrate system until control plane is crossed
+		bool crossed_bool = false;
+		
+		// Local time variable
+		double t = 0;
+		
+		while (not crossed_bool) {
+			// Integrate one step forward
+			array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+			
+			// Check if PS1 has been crossed
+			if (crossed(curr.get(0), next.get(0), curr.get(1), next.get(1), 1, verts2b)) {
+				// Find where trajectory intersects control plane
+				std::vector<double> txzyp = rk4_henon(array3(t, curr.get(0), curr.get(2)), curr.get(1), -(curr.get(1)-ps2y[2]), &hindmarsh_rose::hr_dy_dynamics, neuron);
+				
+				// Mark as crossed to move to next bin
+				crossed_bool = true;
+				
+				// Move time forward
+				t = txzyp[0];
+				
+				// Store ending position into ps2b_inits
+				ps2b_inits.push_back(array3(txzyp[1], txzyp[3], txzyp[2]));
+				
+				// Store travel time into ps2b_time
+				ps2b_time.push_back(t);
+				
+				// Store previous position into ps2b_prev;
+				ps2b_prev.push_back(curr);
+			} else {
+				// Increment time
+				t += dt;
+			}
+			
+			// Set new values to old values
+			curr = next;
+			
+		}
+	}
+	
+	// Save the initial points of the PS2b virtual bins (x y z values corresponding to the middle of the bin on the planes)
+	save_array3_vector(ps2b_inits, "Initial conditions of each bin for PS2b (x y z values).", store_direc + "/ps2_bin_inits.txt");
+	
+	// Save the travel time between PS1 and PS2b
+	save_double_vector(ps2b_time, "Travel time from each bin in PS1 to PS2b.", store_direc + "/ps2_travel_time.txt");
+	
+	// Save the previous positions from each initial position
+	save_array3_vector(ps2b_prev, "Previous point from each initial condition of PS2b.", store_direc + "/ps2_prev_position.txt");
+	
+	return;
+}
+
 
 
 // Returns polynomial coefficients for quadratic fit

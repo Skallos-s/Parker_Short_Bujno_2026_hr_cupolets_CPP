@@ -23,6 +23,15 @@
 
 int main(int argc, char* argv[]) {
 	
+	// FLAGS
+	bool GENERATE_TIME_SERIES_DATA  = false;
+	bool GENERATE_CONTROL_PLANE     = false;
+	bool GENERATE_PS2_CONTROL_PLANE = false;
+	bool GENERATE_CODING_FUNCTIONS  = false;
+	bool DO_POLYNOMIAL_REGRESSION   = false;
+	bool GENERATE_PS2_INITIAL_PTS   = false;
+	bool ESTABLISH_MICRO_MACRO      = false;
+	
 	// Hindmarsh Rose attractor
 	hindmarsh_rose hr = hindmarsh_rose();
 	
@@ -42,21 +51,33 @@ int main(int argc, char* argv[]) {
 	double dt = 1.0/128;
 	
 	// Generate time series data
-	generate_time_series(hr, IC, direc, dt, N);
+	if (GENERATE_TIME_SERIES_DATA) {generate_time_series(hr, IC, direc, dt, N);}
 	
 	// Generate control plane data
-	//find_surfaces(hr);
+	if (GENERATE_CONTROL_PLANE || GENERATE_PS2_CONTROL_PLANE) {
+		find_surfaces(hr, GENERATE_CONTROL_PLANE, GENERATE_PS2_CONTROL_PLANE);
+	}
 	
 	// Generate coding functions
-	//coding_fcn(hr, direc, bin_rn_direc, dt, crossings, bins, false);
+	if (GENERATE_CODING_FUNCTIONS){
+		coding_fcn(hr, direc, bin_rn_direc, dt, crossings, bins, DO_POLYNOMIAL_REGRESSION);
+	}
+	
+	// Generate  PS2 initial points data
+	if (GENERATE_PS2_INITIAL_PTS) {
+		establish_split_control_plane_bins(hr, direc, bin_rn_direc, dt, bins);
+	}
 	
 	// Establish micro and macro controls
-	//establish_microcontrol(hr, direc, bin_rn_direc, 1.0/128, bins);
-	//establish_macrocontrol(bin_rn_direc);
+	if (ESTABLISH_MICRO_MACRO) {
+		establish_microcontrol(hr, direc, bin_rn_direc, 1.0/128, bins);
+		establish_macrocontrol(bin_rn_direc);
+	}
+	
 	
 	// Single cupolet
-	std::vector<unsigned int> ctrl{0,1};
-	unsigned int k = 0;
+	std::vector<unsigned int> ctrl{0,0,1};
+	unsigned int k = 1;
 	
 	std::vector<std::vector<std::vector<unsigned int>>> var = find_cupolets(ctrl, bin_rn_direc);
 	std::cout << var.size() << " " << var[k].size() << std::endl;
@@ -65,8 +86,8 @@ int main(int argc, char* argv[]) {
 		std::cout << var[k][i][0] << " " << var[k][i][1] << " " << var[k][i][2] << std::endl;
 	}
 	
-	std::vector<std::vector<double>> cts = cupolet_time_series(hr, 1.0/128, bins, var[k], direc, bin_rn_direc);
-	save_vector_vector(cts, "Time series data of cupolet 001", bin_rn_direc + "/cupolet_time_series_data.txt");
+	std::vector<std::vector<double>> cts = cupolet_time_series(hr, 1.0/128, bins, var[k], direc, bin_rn_direc, true, 0.5);
+	save_vector_vector(cts, "Time series data of cupolet C001", bin_rn_direc + "/cupolet_time_series_data.txt");
 	
 	
 	return 0;

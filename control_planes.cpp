@@ -22,7 +22,7 @@
 // Reads in neuron, dt, and directory direc.
 // Generates all related Poincare surface information
 // through various functions and plots that are stored in direc.
-void find_surfaces(hindmarsh_rose &neuron, double percent, const std::string direc) {
+void find_surfaces(hindmarsh_rose &neuron, bool GENERATE_CONTROL_PLANE, bool GENERATE_PS2_CONTROL_PLANE, double percent, const std::string direc) {
 	
 	std::cout << "Generating Poincare surfaces and corresponding intersections..." << std::endl;
 	
@@ -48,13 +48,16 @@ void find_surfaces(hindmarsh_rose &neuron, double percent, const std::string dir
 	}
 	
 	// Find indicies of peaks for x time series - used for PS1
-	std::vector<unsigned int> peaks = find_peaks(x);
 	std::vector<unsigned int> mid_peaks = find_mid_peaks(x);
+	std::vector<unsigned int> peaks = find_peaks(x);
+	
+	// Distance between split planes
+	double y_width = 1.0;
 	
 	// Find the vertices of the surface for PS0 and PS1
 	std::vector<array3> verts0 = ps_verts(x,y,z,mid_peaks,0);
 	std::vector<array3> verts1 = ps_verts(x,y,z,peaks,1);
-	
+	std::vector<array3> verts2 = ps2_verts(x,y,z,y_width);
 	
 	// Find all the points on the control planes
 	std::vector<std::vector<double>> pts = ps_points(t, x, y, z, verts0, verts1, neuron);
@@ -65,7 +68,6 @@ void find_surfaces(hindmarsh_rose &neuron, double percent, const std::string dir
 	
 	// y values of PS0 points on plane
 	std::vector<double> yp0;
-	
 	
 	// These lines are used to shrink PS0 to a better fit for the points on the plane
 	for (unsigned int i = 0; i < pts.size(); i++) {
@@ -97,14 +99,23 @@ void find_surfaces(hindmarsh_rose &neuron, double percent, const std::string dir
     verts0[0].set(1, ypmin - ypinc);
 	verts0[1].set(1, ypmax + ypinc);
 	
-	// Save PS0 and PS1 data
-	save_array3_vector(verts0, "X Y Z limits of PS0 plane", store_direc + "/ps0_vertices.txt");
-	save_array3_vector(verts1, "X Y Z limits of PS1 plane", store_direc + "/ps1_vertices.txt");
 	
-	// Save all the PS0 and PS1 points
-	save_vector_vector(pts0, "PS0 points on plane."        , store_direc + "/ps0_pts.txt");
-	save_vector_vector(pts1, "PS1 points on plane."        , store_direc + "/ps1_pts.txt");
-	save_vector_vector(pts, "All points on control planes.", store_direc + "/ps_all_pts.txt");
+	if (GENERATE_CONTROL_PLANE) {
+		// Save PS0 and PS1 data
+		save_array3_vector(verts0, "X Y Z limits of PS0 plane" , store_direc + "/ps0_vertices.txt");
+		save_array3_vector(verts1, "X Y Z limits of PS1 plane" , store_direc + "/ps1_vertices.txt");
+		
+		// Save all the PS0 and PS1 points
+		save_vector_vector(pts0, "PS0 points on plane.", store_direc + "/ps0_pts.txt");
+		save_vector_vector(pts1, "PS1 points on plane.", store_direc + "/ps1_pts.txt");
+		
+		save_vector_vector(pts, "All points on control planes.", store_direc + "/ps_all_pts.txt");
+	}
+	
+	if (GENERATE_PS2_CONTROL_PLANE) {
+		// Save PS2 data
+		save_array3_vector(verts2, "X Y Z limits of PS2 planes", store_direc + "/ps2_vertices.txt");
+	}
 	
 	std::cout << "Completed integration of Poincare surfaces and established control planes. Saved to " + direc + "/control_planes" << std::endl;
 	
@@ -129,18 +140,19 @@ std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &ve
 		xpmax = std::max(xpmax, vec_x[peaks[i]]);
 	}
 	
-	// Min and max of y values
 	for (unsigned int i = 0; i < vec_y.size(); i++) {
+		// Min and max of y values
 		ypmin = std::min(ypmin, vec_y[i]);
 		ypmax = std::max(ypmax, vec_y[i]);
-		yavg += (vec_y[i] - yavg) / (i+1); // Iterative (accurate) average
-	}
-	
-	// Min and max of z values
-	for (unsigned int i = 0; i < vec_z.size(); i++) {
+		
+		// Iterative (accurate) average
+		yavg += (vec_y[i] - yavg) / (i+1);
+		
+		// Min and max of z values
 		zpmin = std::min(zpmin, vec_z[i]);
 		zpmax = std::max(zpmax, vec_z[i]);
 	}
+	
 	
 	// Increase x y z endpoints
 	double x_ext = 0.05 * abs_diff(xpmax , xpmin);
@@ -156,6 +168,75 @@ std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &ve
 		verts.push_back(array3(xpmin-x_ext, yavg, zpmin-z_ext));
 		verts.push_back(array3(xpmax+x_ext, yavg, zpmax+z_ext));
 	}
+	return verts;
+}
+
+// Like ps_verts, but PS1 is split into PS1 and PS2. The planes are shifted horizontally along y. Moreover the input is assumed to be ps1.
+// Returns a matrix containing the x y z values of PS1a, followed by he x y z values of PS1b.
+// The y positions of the plane have average yavg (calculated) and distance y_width (given).
+std::vector<array3> ps2_verts(std::vector<double> &vec_x, std::vector<double> &vec_y, std::vector<double> &vec_z, double y_width) {
+		
+	std::vector<array3> verts;
+	
+	// Initialize minimum and maximum double values
+	double xpminA = DBL_MAX, xpmaxA = -DBL_MAX;
+	double xpminB = DBL_MAX, xpmaxB = -DBL_MAX;
+	double ypmin  = DBL_MAX, ypmax  = -DBL_MAX;
+	double zpmin  = DBL_MAX, zpmax  = -DBL_MAX;
+	double yavg   = 0;
+	
+	for (unsigned int i = 0; i < vec_y.size(); i++) {
+		// Min and max of y values
+		ypmin = std::min(ypmin, vec_y[i]);
+		ypmax = std::max(ypmax, vec_y[i]);
+		
+		// Iterative (accurate) average
+		yavg += (vec_y[i] - yavg) / (i+1);
+		
+		// Min and max of z values
+		zpmin = std::min(zpmin, vec_z[i]);
+		zpmax = std::max(zpmax, vec_z[i]);
+	}
+	
+	// Y position of planes
+	double yA = yavg + y_width * 2;
+	double yB = yavg - y_width / 2;
+	
+	// Min and max of x values for PS2a and PS2b
+	for (unsigned int i = 0; i + 1 < vec_y.size(); i++) {
+		// Check if x > 1
+		if (vec_x[i] > 1) {
+			// Check if y crossed over PS2a plane
+			if (vec_y[i+1] <= yA and yA <= vec_y[i]) {
+				xpminA = std::min(xpminA, vec_x[i]);
+				xpminA = std::min(xpminA, vec_x[i+1]);
+				xpmaxA = std::max(xpmaxA, vec_x[i]);
+				xpmaxA = std::max(xpmaxA, vec_x[i+1]);
+			}
+			
+			// Check if y crossed over PS2b plane
+			if (vec_y[i+1] <= yB and yB <= vec_y[i]) {
+				xpminB = std::min(xpminB, vec_x[i]);
+				xpminB = std::min(xpminB, vec_x[i+1]);
+				xpmaxB = std::max(xpmaxB, vec_x[i]);
+				xpmaxB = std::max(xpmaxB, vec_x[i+1]);
+			}
+		}
+	}
+	
+	// Increase x y z endpoints
+	double x_extA = 0.05 * abs_diff(xpmaxA , xpminA);
+	double x_extB = 0.05 * abs_diff(xpmaxB , xpminB);
+	double z_ext  = 0.01 * abs_diff(zpmax  , zpmin);
+	
+	// Establish PS2a values
+	verts.push_back(array3(xpminA-x_extA, yA, zpmin-z_ext));
+	verts.push_back(array3(xpmaxA+x_extA, yA, zpmax+z_ext));
+	
+	// Establish PS2b values
+	verts.push_back(array3(xpminB-x_extB, yB, zpmin-z_ext));
+	verts.push_back(array3(xpmaxB+x_extB, yB, zpmax+z_ext));
+	
 	return verts;
 }
 
@@ -193,7 +274,7 @@ std::vector<std::vector<double>> ps_points(std::vector<double> &t, std::vector<d
 	return pts;
 }
 
-// Reads in points x_n, x_n1, y_n, y_n1 and using surface ps (indicates which plane, 0 or 1) with
+// Reads in points x_n, x_n1, y_n, y_n1 and using surface ps (indicates which plane, 0 for PS0, 1 for PS1 and PS2a, and 2 for PS2b) with
 // vertices verts, checks to see if pts are on opposite sides of the surface
 bool crossed(double x_n, double x_n1, double y_n, double y_n1, int ps, std::vector<array3> &verts) {
 	// Check for crossing PS1
@@ -201,7 +282,7 @@ bool crossed(double x_n, double x_n1, double y_n, double y_n1, int ps, std::vect
 		// Change of signs in y direction indicates crossing PS1
 		double sp = y_n - verts[0].get(1), sp1 = y_n1 - verts[0].get(1);
 		if (x_n <= verts[1].get(0) && x_n1 >= verts[0].get(0) && sgn(sp1) != sgn(sp) && sgn(sp) == 1) {
-			// PS1 crossed if yn and yn1 signs differ, and the xn and xn1 are within the PS1 boundary
+			// PS1 or PS1a crossed if yn and yn1 signs differ, and the xn and xn1 are within the PS1 or PS1a boundary
 			return true;
 		}
 	}

@@ -27,6 +27,10 @@ void gen_bin_data(std::vector<double> &rbin_endpts, std::vector<double> &rbin_mi
 // rmap will contain the binary decimal that map produces
 void gen_crossing_sequence(std::vector<double> &rmap, std::vector<std::vector<unsigned int>> &map, std::vector<array3> &x, hindmarsh_rose &neuron, std::vector<double> &ps0x, std::vector<double> &ps0y, std::vector<double> &ps1x, std::vector<double> &ps1y, unsigned int N = 16, unsigned int bins = 1600, double dt = 1.0/128);
 
+// Reads in neuron object, direc directory, number of bins bins, and time step dt.
+// Generates the initial points of the PS2b bins.
+void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt = 1.0/128, unsigned int bins = 1600);
+
 // Returns polynomial coefficients for quadratic/cubic fit
 // 3x3 and 4x4 matrix inverses are specialized
 std::vector<double> quadratic_regression(std::vector<double> &ind, std::vector<double> &dep);
