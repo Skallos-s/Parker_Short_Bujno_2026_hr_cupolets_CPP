@@ -9,6 +9,8 @@
 #include <iostream>
 #include <vector>
 
+#include <bits/stdc++.h>
+
 #include "microcontrol.h"
 #include "macrocontrol.h"
 #include "cupolet_search.h"
@@ -30,6 +32,7 @@ int main(int argc, char* argv[]) {
 	bool GENERATE_CODING_FUNCTIONS  = false;
 	bool DO_POLYNOMIAL_REGRESSION   = false;
 	bool GENERATE_PS2_INITIAL_PTS   = false;
+	bool GENERATE_PS2_PREIMAGE      = false;
 	bool ESTABLISH_MICRO_MACRO      = false;
 	
 	// Hindmarsh Rose attractor
@@ -68,26 +71,72 @@ int main(int argc, char* argv[]) {
 		establish_split_control_plane_bins(hr, direc, bin_rn_direc, dt, bins);
 	}
 	
+	// Generate preimage of PS1 inits onto PS2a
+	if (GENERATE_PS2_PREIMAGE) {
+		establish_ps1_preimage(hr, direc, bin_rn_direc, dt, bins);
+	}
+	
 	// Establish micro and macro controls
 	if (ESTABLISH_MICRO_MACRO) {
-		establish_microcontrol(hr, direc, bin_rn_direc, 1.0/128, bins);
+		establish_microcontrol(hr, direc, bin_rn_direc, dt, bins);
 		establish_macrocontrol(bin_rn_direc);
 	}
-	
-	
+
 	// Single cupolet
 	std::vector<unsigned int> ctrl{0,0,1};
-	unsigned int k = 1;
+	unsigned int k = 2;
 	
-	std::vector<std::vector<std::vector<unsigned int>>> var = find_cupolets(ctrl, bin_rn_direc);
-	std::cout << var.size() << " " << var[k].size() << std::endl;
+	std::vector<unsigned int> bin_start = find_cupolets_start_bins(ctrl, bin_rn_direc);
+	std::cout << bin_start.size() << std::endl;
 	
-	for (unsigned int i = 0; i < var[k].size(); i++) {
-		std::cout << var[k][i][0] << " " << var[k][i][1] << " " << var[k][i][2] << std::endl;
+	for (unsigned int i = 0; i < bin_start.size(); i++) {
+		std::cout << bin_start[i] << std::endl;
 	}
 	
-	std::vector<std::vector<double>> cts = cupolet_time_series(hr, 1.0/128, bins, var[k], direc, bin_rn_direc, true, 0.5);
-	save_vector_vector(cts, "Time series data of cupolet C001", bin_rn_direc + "/cupolet_time_series_data.txt");
+	array3 x_start = array3(1.634452765655149298, -3.845121257270092130, 3.346284961480030518);
+	
+	for (unsigned int i = 0; i < 100; i++) {
+		array3 rand_start = array3(std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10);
+		array3 rand_shift = array3(std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10);
+		
+		array3 new_start = x_start + rand_start;
+		array3 new_goal  = new_start + rand_shift;
+		
+		array3 x_impulse = rk4_reverse(new_start, new_goal, dt, &hindmarsh_rose::hr_dynamics, hr);
+		
+		array3 x_new = rk4_impulse(new_start, x_impulse, dt, &hindmarsh_rose::hr_dynamics, hr);
+		
+		array3 new_diff = x_new - new_goal;
+		
+		if (new_diff != array3(0,0,0)) {
+			std::cout << i << std::endl;
+			std::cout << new_start << std::endl;
+			std::cout << new_goal << std::endl;
+			std::cout << new_diff << std::endl;
+		}
+	}
+	
+	
+	
+	//save_impulse_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	//time_series_from_impulse(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	
+	//save_time_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	
+	//for (unsigned int i = 0; i < bins; i++) {
+	//	save_impulse_function(hr, dt, bins, i, 1, direc, bin_rn_direc);
+	//}
+	
+	//std::vector<std::vector<std::vector<unsigned int>>> var = find_cupolets(ctrl, bin_rn_direc);
+	//std::cout << var.size() << " " << var[k].size() << std::endl;
+	//
+	//for (unsigned int i = 0; i < var[k].size(); i++) {
+	//	std::cout << var[k][i][0] << " " << var[k][i][1] << " " << var[k][i][2] << std::endl;
+	//}
+	
+	//std::vector<std::vector<double>> cts = cupolet_time_series(hr, 1.0/128, bins, var[k], direc, bin_rn_direc, true, 0.5);
+	//save_data(cts, "Time series data of cupolet C001", bin_rn_direc + "/cupolet_time_series_data.txt");
+	
 	
 	
 	return 0;

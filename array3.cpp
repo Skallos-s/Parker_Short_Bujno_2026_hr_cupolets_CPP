@@ -64,6 +64,14 @@ array3 operator-(const array3 &a1, const array3 &a2) {
 	return array3(vx, vy, vz);
 }
 
+// Pointwise multiplication of two arrays
+array3 operator*(const array3 &a1, const array3 &a2) {
+	double vx = a1.x * a2.x;
+	double vy = a1.y * a2.y;
+	double vz = a1.z * a2.z;
+	return array3(vx, vy, vz);
+}
+
 // Scaling of array by double
 array3 operator*(const array3 &a1, const double f) {
 	double vx = a1.x * f;
@@ -108,6 +116,14 @@ void operator*=(array3 &a1, const double f) {
 	a1.y *= f;
 	a1.z *= f;
 }
+
+// Multiplication assignment of array and double
+void operator*=(array3 &a1, const array3 &a2) {
+	a1.x *= a2.x;
+	a1.y *= a2.y;
+	a1.z *= a2.z;
+}
+
 // Division assignment of array and double
 void operator/=(array3 &a1, const double f) {
 	a1.x /= f;
@@ -115,6 +131,25 @@ void operator/=(array3 &a1, const double f) {
 	a1.z /= f;
 }
 
+// Equality testing
+bool operator==(const array3 &a1, const array3 &a2) {
+	return (a1.x == a2.x) && (a1.y == a2.y) && (a1.z == a2.z);
+}
+
+// Inequality testing
+bool operator!=(const array3 &a1, const array3 &a2) {
+	return !(a1==a2);
+}
+
+
+// Squared distance
+double squared_distance(const array3 &a1, const array3 &a2) {
+	double xd = a1.x - a2.x;
+	double yd = a1.y - a2.y;
+	double zd = a1.z - a2.z;
+	
+	return xd*xd + yd*yd + zd*zd;
+}
 
 // Stream output
 std::ostream& operator<<(std::ostream &out, const array3 &a1) {

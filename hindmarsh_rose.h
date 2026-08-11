@@ -46,7 +46,9 @@ public:
 	
 	// Dynamics
 	array3 hr_dynamics(array3 state) const;
+	array3 hr_dynamics_reversed(array3 state) const;
 	array3 hr_dy_dynamics(array3 state, double y) const;
+	array3 hr_dy_dynamics_reversed(array3 state, double y) const;
 	array3 hr_dx_dynamics(array3 state, double x) const;
 	//array3 hr_jacobian(double t, array3 state);
 	

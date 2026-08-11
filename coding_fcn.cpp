@@ -49,8 +49,8 @@ void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::stri
 		ps1_p = quadratic_regression(ps1pts_y, ps1pts_z); // Implement cubic regression and replace quadratic with cubic
 		
 		// Save the polynomial coefficients for each plane
-		save_double_vector(ps0_p, "Coefficients of approximating polynomial for PS0 (first is coefficient of highest degree).", store_direc + "/ps0_poly_coeffs.txt");
-		save_double_vector(ps1_p, "Coefficients of approximating polynomial for PS1 (first is coefficient of highest degree).", store_direc + "/ps1_poly_coeffs.txt");
+		save_data(ps0_p, "Coefficients of approximating polynomial for PS0 (first is coefficient of highest degree).", store_direc + "/ps0_poly_coeffs.txt");
+		save_data(ps1_p, "Coefficients of approximating polynomial for PS1 (first is coefficient of highest degree).", store_direc + "/ps1_poly_coeffs.txt");
 	} else {
 		loadtxt_1(ps0_p, store_direc + "/ps0_poly_coeffs.txt");
 		loadtxt_1(ps1_p, store_direc + "/ps1_poly_coeffs.txt");
@@ -63,16 +63,16 @@ void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::stri
 	gen_bin_data(bin1, bin1_mids, bin1_inits, ps1x, ps1y, ps1_p, bins, 1);
 	
 	// Save the end points of the bins for PS0 and PS1
-	save_double_vector(bin0, "End points of each bin for PS0 (y values).", store_direc + "/ps0_bin_endpoints.txt");
-	save_double_vector(bin1, "End points of each bin for PS1 (x values).", store_direc + "/ps1_bin_endpoints.txt");
+	save_data(bin0, "End points of each bin for PS0 (y values).", store_direc + "/ps0_bin_endpoints.txt");
+	save_data(bin1, "End points of each bin for PS1 (x values).", store_direc + "/ps1_bin_endpoints.txt");
 	
 	// Save the mid points of each of the bins for PS0 and PS1
-	save_double_vector(bin0_mids, "Mid points of each bin for PS0 (y values).", store_direc + "/ps0_bin_midpoints.txt");
-	save_double_vector(bin1_mids, "Mid points of each bin for PS1 (x values).", store_direc + "/ps1_bin_midpoints.txt");
+	save_data(bin0_mids, "Mid points of each bin for PS0 (y values).", store_direc + "/ps0_bin_midpoints.txt");
+	save_data(bin1_mids, "Mid points of each bin for PS1 (x values).", store_direc + "/ps1_bin_midpoints.txt");
 	
 	// Save the initial points of the bins for PS0 and PS1 (x y z values corresponding to the middle of the bin on the planes)
-	save_array3_vector(bin0_inits, "Initial conditions of each bin for PS0 (x y z values).", store_direc + "/ps0_bin_inits.txt");
-	save_array3_vector(bin1_inits, "Initial conditions of each bin for PS1 (x y z values).", store_direc + "/ps1_bin_inits.txt");
+	save_data(bin0_inits, "Initial conditions of each bin for PS0 (x y z values).", store_direc + "/ps0_bin_inits.txt");
+	save_data(bin1_inits, "Initial conditions of each bin for PS1 (x y z values).", store_direc + "/ps1_bin_inits.txt");
 	
 	std::vector<double> rn0, rn1;
 	std::vector<std::vector<unsigned int>> map0, map1;
@@ -82,8 +82,8 @@ void coding_fcn(hindmarsh_rose &neuron, const std::string direc, const std::stri
 	gen_crossing_sequence(rn1, map1, bin1_inits, neuron, ps0x, ps0y, ps1x, ps1y, coding_fcn_N, bins, dt);
 	
 	// Save binary decmial for each coding map for each control plane
-	save_double_vector(rn0, "Rn function for PS0 (binary decimal).", store_direc + "/ps0_rn_fcn.txt");
-	save_double_vector(rn1, "Rn function for PS1 (binary decimal).", store_direc + "/ps1_rn_fcn.txt");
+	save_data(rn0, "Rn function for PS0 (binary decimal).", store_direc + "/ps0_rn_fcn.txt");
+	save_data(rn1, "Rn function for PS1 (binary decimal).", store_direc + "/ps1_rn_fcn.txt");
 	
 	// Save each coding map for each control plane
 	save_binary(map0, "Symbolic future crossings of PS0 for each bin.", store_direc + "/ps0_rn_map_fcn.txt");
@@ -241,7 +241,7 @@ void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::strin
 	std::vector<double> ps1endpts;
 	loadtxt_1(ps1endpts, bin_rn_direc + "/coding_fcn/ps1_bin_endpoints.txt");
 	
-	// Read in the vertices of the PS1 and PS2 control planes
+	// Read in the vertices of the PS2 control plane
 	std::vector<double> ps2x, ps2y, ps2z;
 	loadtxt_3(ps2x, ps2y, ps2z, direc + "/control_planes/ps2_vertices.txt");
 	
@@ -257,9 +257,6 @@ void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::strin
 	
 	// Travel time between PS1 and PS2b
 	std::vector<double> ps2b_time;
-	
-	// Previous point prior to crossing PS2b
-	std::vector<array3> ps2b_prev;
 	
 	// Step forward ps1inits to find ps2b_inits
 	for (unsigned int i = 0; i < bins; i++) {
@@ -292,9 +289,6 @@ void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::strin
 				
 				// Store travel time into ps2b_time
 				ps2b_time.push_back(t);
-				
-				// Store previous position into ps2b_prev;
-				ps2b_prev.push_back(curr);
 			} else {
 				// Increment time
 				t += dt;
@@ -307,17 +301,150 @@ void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::strin
 	}
 	
 	// Save the initial points of the PS2b virtual bins (x y z values corresponding to the middle of the bin on the planes)
-	save_array3_vector(ps2b_inits, "Initial conditions of each bin for PS2b (x y z values).", store_direc + "/ps2_bin_inits.txt");
+	save_data(ps2b_inits, "Initial conditions of each bin for PS2b (x y z values).", store_direc + "/ps2b_bin_inits.txt");
 	
 	// Save the travel time between PS1 and PS2b
-	save_double_vector(ps2b_time, "Travel time from each bin in PS1 to PS2b.", store_direc + "/ps2_travel_time.txt");
+	save_data(ps2b_time, "Travel time from each bin in PS1 to PS2b.", store_direc + "/ps2_travel_time.txt");
 	
 	// Save the previous positions from each initial position
-	save_array3_vector(ps2b_prev, "Previous point from each initial condition of PS2b.", store_direc + "/ps2_prev_position.txt");
+	//save_array3_vector(ps2b_prev, "Previous point from each initial condition of PS2b.", store_direc + "/ps2_prev_position.txt");
 	
 	return;
 }
 
+
+// Computes preimage of PS1 starting points onto PS2a
+void establish_ps1_preimage(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt, unsigned int bins) {
+	
+	std::cout << "Creating PS2a inits..." << std::endl;
+	
+	// Directory where to store PS2 bin data
+	const std::string store_direc = bin_rn_direc + "/coding_fcn";
+	
+	// Create the directory if it does not exist
+	check_direc(store_direc);
+	
+	// Read in the PS1 control plane initial conditions
+	std::vector<array3> ps1inits, ps2inits;
+	loadtxt_1(ps1inits, bin_rn_direc + "/coding_fcn/ps1_bin_inits.txt");
+	
+	// Read in the vertices of the PS1 and PS2 control planes
+	std::vector<double> ps1x, ps1y, ps1z, ps2x, ps2y, ps2z;
+	loadtxt_3(ps1x, ps1y, ps1z, direc + "/control_planes/ps1_vertices.txt");
+	loadtxt_3(ps2x, ps2y, ps2z, direc + "/control_planes/ps2_vertices.txt");
+	
+	// Travel time from PS2a to PS1 and from PS1 to PS2b
+	std::vector<double> travel_time_1, travel_time_2;
+	
+	// Center of PS2a
+	double x_pos = (ps2x[1] + ps2x[0]) / 2;
+	double z_pos = (ps2z[1] + ps2z[0]) / 2;
+	
+	// Scaling ratio
+	double scale_x = (ps2x[1] - ps2x[0]) / (ps1x[1] - ps1x[0]) * 2 / 3;
+	double scale_z = (ps2z[1] - ps2z[0]) / (ps1z[1] - ps1z[0]) * 2 / 3;
+	
+	// Loop through PS1 bins
+	for (unsigned int i = 0; i < bins; i++) {
+		
+		array3 star = array3(x_pos, ps2y[0], z_pos);
+		array3 ps1i = ps1inits[i];
+		
+		// Descend to optimal PS2a bin
+		for (unsigned int count = 0; count < 50; count++) {
+			// Inegrate from starting position
+			array3 curr(star);
+			
+			// Integrate until PS1 reached
+			while (true) {
+				array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+				
+				// Check if PS1 has been crossed
+				if ((next.get(1) <= ps1y[0]) and (ps1y[0] < curr.get(1))) {
+					// Find where trajectory intersects control plane
+					// Value of t not necessary
+					std::vector<double> txzyp = rk4_henon(array3(0, curr.get(0), curr.get(2)), curr.get(1), -(curr.get(1)-ps1y[0]), &hindmarsh_rose::hr_dy_dynamics, neuron);
+					
+					// Update next to be on PS1
+					next = array3(txzyp[1], txzyp[3], txzyp[2]);
+					
+					// Shift to apply to star
+					double x_shift = (ps1i.get(0) - next.get(0)) * scale_x;
+					double z_shift = (ps1i.get(2) - next.get(2)) * scale_z;
+					
+					// Apply shift
+					star.set(0, star.get(0) + x_shift);
+					star.set(2, star.get(2) + z_shift);
+					
+					// Exit while loop
+					break;
+				}
+				
+				// Set new values to old values
+				curr = next;
+			}
+		}
+		
+		// Record preimage
+		ps2inits.push_back(star);
+	
+		// Compute travel time from PS2a bin to PS2b
+		array3 curr(star);
+		
+		// Time variable
+		double t = 0;
+		
+		// Integrate until PS2b reached
+		while (true) {
+			array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+			
+			// Check if PS1 has been crossed
+			if ((next.get(1) <= ps1y[0]) and (ps1y[0] < curr.get(1))) {
+				// Find where trajectory intersects control plane
+				std::vector<double> txzyp = rk4_henon(array3(t, curr.get(0), curr.get(2)), curr.get(1), -(curr.get(1)-ps1y[0]), &hindmarsh_rose::hr_dy_dynamics, neuron);
+				
+				// Update next to be on PS2b
+				next = array3(txzyp[1], txzyp[3], txzyp[2]);
+				
+				// Reset time
+				t = 0;
+				
+				// Record travel time
+				travel_time_1.push_back(txzyp[0]);
+				
+				// Check if PS2b has been crossed
+			} else if ((next.get(1) <= ps2y[2]) and (ps2y[2] < curr.get(1))) {
+				// Find where trajectory intersects control plane
+				std::vector<double> txzyp = rk4_henon(array3(t, curr.get(0), curr.get(2)), curr.get(1), -(curr.get(1)-ps2y[2]), &hindmarsh_rose::hr_dy_dynamics, neuron);
+				
+				// Update next to be on PS2b
+				next = array3(txzyp[1], txzyp[3], txzyp[2]);
+				
+				// Record travel time
+				travel_time_2.push_back(txzyp[0]);
+				
+				// Exit while loop
+				break;
+				
+			} else {
+				// Update time
+				t += dt;
+			}
+			
+			// Set new values to old values
+			curr = next;
+		}
+	}
+	
+	// Save the preimage initial points of the PS2a control plane
+	save_data(ps2inits, "Preimage of PS1 inits onto PS2a.", store_direc + "/ps2a_bin_inits.txt");
+	
+	// Save travel times from PS2a to PS2b
+	save_data(travel_time_1, "Travel times from PS2a to PS1.", store_direc + "/ps2a_ps1_travel_times.txt");
+	save_data(travel_time_2, "Travel times from PS1 to PS2b.", store_direc + "/ps1_ps2b_travel_times.txt");
+	
+	return;
+}
 
 
 // Returns polynomial coefficients for quadratic fit

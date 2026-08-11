@@ -14,6 +14,7 @@
 void loadtxt_4(std::vector<double> &vec_t, std::vector<double> &vec_x, std::vector<double> &vec_y, std::vector<double> &vec_z, const std::string file_path);
 void loadtxt_3(std::vector<double> &psx, std::vector<double> &psy, std::vector<double> &psz, const std::string file_path);
 void loadtxt_2(std::vector<unsigned int> &index, std::vector<unsigned int> &ps, const std::string file_path);
+void loadtxt_2(std::vector<double> &time, std::vector<array3> &impulse, const std::string file_path);
 void loadtxt_1(std::vector<std::vector<double>> &pts, const std::string file_path);
 void loadtxt_1(std::vector<double> &pts, const std::string file_path);
 void loadtxt_1(std::vector<array3> &pts, const std::string file_path);
@@ -28,11 +29,11 @@ std::vector<unsigned int> find_mid_peaks(std::vector<double> &vec);
 
 // Write 2D array to file
 // std::vector<std::vector<double>> data contains vector<double> of length 5 (t x y z ps)
-void save_array3_vector(std::vector<array3> &data, const std::string header, const std::string location);
-void save_vector_vector(std::vector<std::vector<double>> &data, const std::string header, const std::string location);
-void save_vector_unsigned_int(std::vector<std::vector<unsigned int>> &data, const std::string header, const std::string location);
-void save_double_vector(std::vector<double> &data, const std::string header, const std::string location);
-void save_uint_vector(std::vector<unsigned int> &data, const std::string header, const std::string location);
+void save_data(std::vector<array3> &data, const std::string header, const std::string location);
+void save_data(std::vector<std::vector<double>> &data, const std::string header, const std::string location);
+void save_data(std::vector<std::vector<unsigned int>> &data, const std::string header, const std::string location);
+void save_data(std::vector<double> &data, const std::string header, const std::string location);
+void save_data(std::vector<unsigned int> &data, const std::string header, const std::string location);
 void save_binary(std::vector<std::vector<unsigned int>> &map, const std::string header, const std::string location);
 
 // Signum function

@@ -102,19 +102,19 @@ void find_surfaces(hindmarsh_rose &neuron, bool GENERATE_CONTROL_PLANE, bool GEN
 	
 	if (GENERATE_CONTROL_PLANE) {
 		// Save PS0 and PS1 data
-		save_array3_vector(verts0, "X Y Z limits of PS0 plane" , store_direc + "/ps0_vertices.txt");
-		save_array3_vector(verts1, "X Y Z limits of PS1 plane" , store_direc + "/ps1_vertices.txt");
+		save_data(verts0, "X Y Z limits of PS0 plane" , store_direc + "/ps0_vertices.txt");
+		save_data(verts1, "X Y Z limits of PS1 plane" , store_direc + "/ps1_vertices.txt");
 		
 		// Save all the PS0 and PS1 points
-		save_vector_vector(pts0, "PS0 points on plane.", store_direc + "/ps0_pts.txt");
-		save_vector_vector(pts1, "PS1 points on plane.", store_direc + "/ps1_pts.txt");
+		save_data(pts0, "PS0 points on plane.", store_direc + "/ps0_pts.txt");
+		save_data(pts1, "PS1 points on plane.", store_direc + "/ps1_pts.txt");
 		
-		save_vector_vector(pts, "All points on control planes.", store_direc + "/ps_all_pts.txt");
+		save_data(pts, "All points on control planes.", store_direc + "/ps_all_pts.txt");
 	}
 	
 	if (GENERATE_PS2_CONTROL_PLANE) {
 		// Save PS2 data
-		save_array3_vector(verts2, "X Y Z limits of PS2 planes", store_direc + "/ps2_vertices.txt");
+		save_data(verts2, "X Y Z limits of PS2 planes", store_direc + "/ps2_vertices.txt");
 	}
 	
 	std::cout << "Completed integration of Poincare surfaces and established control planes. Saved to " + direc + "/control_planes" << std::endl;
@@ -199,8 +199,8 @@ std::vector<array3> ps2_verts(std::vector<double> &vec_x, std::vector<double> &v
 	}
 	
 	// Y position of planes
-	double yA = yavg + y_width * 2;
-	double yB = yavg - y_width / 2;
+	double yA = yavg + y_width;
+	double yB = yavg - y_width;
 	
 	// Min and max of x values for PS2a and PS2b
 	for (unsigned int i = 0; i + 1 < vec_y.size(); i++) {

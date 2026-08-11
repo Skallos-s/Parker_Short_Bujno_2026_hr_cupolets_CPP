@@ -31,6 +31,10 @@ void gen_crossing_sequence(std::vector<double> &rmap, std::vector<std::vector<un
 // Generates the initial points of the PS2b bins.
 void establish_split_control_plane_bins(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt = 1.0/128, unsigned int bins = 1600);
 
+// Computes preimage of PS1 starting points onto PS2a
+void establish_ps1_preimage(hindmarsh_rose &neuron, const std::string direc, const std::string bin_rn_direc, double dt = 1.0/128, unsigned int bins = 1600);
+
+
 // Returns polynomial coefficients for quadratic/cubic fit
 // 3x3 and 4x4 matrix inverses are specialized
 std::vector<double> quadratic_regression(std::vector<double> &ind, std::vector<double> &dep);

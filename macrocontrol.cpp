@@ -40,12 +40,12 @@ void establish_macrocontrol(const std::string bin_rn_direc) {
 	macro_control_map(ctrl1, diff1, rn1);
 	
 	// Save the macrocontrol maps for PS0 and PS1
-	save_uint_vector(ctrl0, "PS0 macrocontrol map.", store_direc + "/ps0_macrocontrol.txt");
-	save_uint_vector(ctrl1, "PS1 macrocontrol map.", store_direc + "/ps1_macrocontrol.txt");
+	save_data(ctrl0, "PS0 macrocontrol map.", store_direc + "/ps0_macrocontrol.txt");
+	save_data(ctrl1, "PS1 macrocontrol map.", store_direc + "/ps1_macrocontrol.txt");
 	
 	// Save the macrocontrol difference maps for PS0 and PS1
-	save_double_vector(diff0, "PS0 macrocontrol difference map.", store_direc + "/ps0_diff_macrocontrol.txt");
-	save_double_vector(diff1, "PS1 macrocontrol difference map.", store_direc + "/ps1_diff_macrocontrol.txt");
+	save_data(diff0, "PS0 macrocontrol difference map.", store_direc + "/ps0_diff_macrocontrol.txt");
+	save_data(diff1, "PS1 macrocontrol difference map.", store_direc + "/ps1_diff_macrocontrol.txt");
 	
 	std::cout << "Saved macrocontrol map to " + store_direc << std::endl;
 }

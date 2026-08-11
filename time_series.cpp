@@ -49,7 +49,7 @@ void generate_time_series(hindmarsh_rose hr, array3 IC, const std::string direc,
 	}
 	
 	// Save time series data to file
-	save_vector_vector(time_series, "t x y z data from HR integration", store_direc + "/hr_time_series.txt");
+	save_data(time_series, "t x y z data from HR integration", store_direc + "/hr_time_series.txt");
 	
 	return;
 }
@@ -86,7 +86,7 @@ void generate_time_series(hindmarsh_rose hr, array3 IC, const std::string direc,
 	}
 	
 	// Save time series data to file
-	save_vector_vector(time_series, "t x y z data from HR integration", store_direc + "/hr_time_series.txt");
+	save_data(time_series, "t x y z data from HR integration", store_direc + "/hr_time_series.txt");
 	
 	return;
 }

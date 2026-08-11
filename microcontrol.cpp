@@ -31,8 +31,8 @@ void establish_microcontrol(hindmarsh_rose &neuron, const std::string direc, con
 	std::vector<std::vector<unsigned int>> ps0_micro = micro_control_map(neuron, direc, bin_rn_direc, dt, bins, 0);
 	std::vector<std::vector<unsigned int>> ps1_micro = micro_control_map(neuron, direc, bin_rn_direc, dt, bins, 1);
 	
-	save_vector_unsigned_int(ps0_micro, "Microcontrol map for PS0", store_direc + "/ps0_microcontrol.txt");
-	save_vector_unsigned_int(ps1_micro, "Microcontrol map for PS1", store_direc + "/ps1_microcontrol.txt");
+	save_data(ps0_micro, "Microcontrol map for PS0", store_direc + "/ps0_microcontrol.txt");
+	save_data(ps1_micro, "Microcontrol map for PS1", store_direc + "/ps1_microcontrol.txt");
 	
 	std::cout << "Saved microcontrol map to " + store_direc << std::endl;
 }

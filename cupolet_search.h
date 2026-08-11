@@ -19,11 +19,22 @@ std::vector<std::vector<std::vector<unsigned int>>> find_cupolets(std::vector<un
 // that tell how to implement macrocontrol. Returns time series of cupolet.
 std::vector<std::vector<double>> cupolet_time_series(hindmarsh_rose &neuron, double dt, unsigned int bins, std::vector<std::vector<unsigned int>> cupolet, const std::string direc, const std::string bin_rn_direc, bool split_planes = false, double BEZIER_STRENGTH = 0.5);
 
-// Generates cupolet based off of control. Reads in neuron state, dt, number of bins and
-// crossings, control sequence, number of iterations, directory to pull info, and ctrl0,ctrl1 arrays
-// that tell how to implement macrocontrol. Returns time series of cupolet.
-// Jumps from PS2a plane to PS2b plane according to 
-//std::vector<std::vector<double>> cupolet_time_series_jump(hindmarsh_rose &neuron, double dt, unsigned int bins, std::vector<std::vector<unsigned int>> cupolet, const std::string direc, const std::string bin_rn_direc);
+// Finds all cupolets with given ctrl sequence of length less than limit, that star ton PS1 plane.
+// Returns start bins of each cupolet
+std::vector<unsigned int> find_cupolets_start_bins(std::vector<unsigned int> &ctrl, const std::string bin_rn_direc, unsigned int limit = 600);
+
+// Generates cupolet from control sequence and starting bin. Reads in neuron state, dt, number of bins
+// starting bin, control sequence, and save directories. Generates and saves time series of cupolet
+void save_time_series(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
+
+// Generates impulse function for entire cupolet from control sequence and starting bin.
+// Reads in neuron state, dt, number of bins starting bin, control sequence, and save directories.
+void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
+
+// Generates impulse function for entire cupolet from control sequence and starting bin.
+// Reads in neuron state, dt, number of bins starting bin, control sequence, and save directories.
+// Generates cupolet from starting bin and impulse series.
+void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
 
 
 #endif

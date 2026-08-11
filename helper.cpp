@@ -91,7 +91,7 @@ void loadtxt_2(std::vector<unsigned int> &index, std::vector<unsigned int> &ps, 
 	std::string line;
 	std::istringstream i_line;
 	
-	double ind, psv;
+	unsigned int ind, psv;
 	
 	// Load file
 	file.open(file_path);
@@ -107,6 +107,38 @@ void loadtxt_2(std::vector<unsigned int> &index, std::vector<unsigned int> &ps, 
 			if (i_line >> ind >> psv) {
 				index.push_back(ind);
 				ps.push_back(psv);
+			} else {
+				std::cout << "Error Reading Line " << line << std::endl; 
+			}
+		}
+		file.close();
+	}
+	
+	return;
+}
+
+// Load data from text file into vector of doubles and vector of array3s
+void loadtxt_2(std::vector<double> &time, std::vector<array3> &impulse, const std::string file_path) {
+	std::ifstream file;
+	std::string line;
+	std::istringstream i_line;
+	
+	double t, x, y, z;
+	
+	// Load file
+	file.open(file_path);
+	
+	if (file.is_open()) {
+		// Read file
+		while (getline(file, line)) {
+			if (line[0] == '#') continue;
+			
+			i_line.clear();
+			i_line.str(line);
+			
+			if (i_line >> t >> x >> y >> z) {
+				time.push_back(t);
+				impulse.push_back(array3(x,y,z));
 			} else {
 				std::cout << "Error Reading Line " << line << std::endl; 
 			}
@@ -311,7 +343,7 @@ std::vector<unsigned int> find_mid_peaks(std::vector<double> &vec) {
 }
 
 // Write 2D array to file
-void save_array3_vector(std::vector<array3> &data, const std::string header, const std::string location) {
+void save_data(std::vector<array3> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
 	file << "# " << header << std::endl;
@@ -325,7 +357,7 @@ void save_array3_vector(std::vector<array3> &data, const std::string header, con
 
 // Write 2D array to file
 // data contains vector<double> of fixed length (t x y z (ps))
-void save_vector_vector(std::vector<std::vector<double>> &data, const std::string header, const std::string location) {
+void save_data(std::vector<std::vector<double>> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
 	file << "# " << header << std::endl;
@@ -342,7 +374,7 @@ void save_vector_vector(std::vector<std::vector<double>> &data, const std::strin
 
 // Write 2D array to file
 // data contains vector<unsigned int> of length 2 (t ps)
-void save_vector_unsigned_int(std::vector<std::vector<unsigned int>> &data, const std::string header, const std::string location) {
+void save_data(std::vector<std::vector<unsigned int>> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
 	file << "# " << header << std::endl;
@@ -353,7 +385,7 @@ void save_vector_unsigned_int(std::vector<std::vector<unsigned int>> &data, cons
 }
 
 // Write 1d array to file
-void save_double_vector(std::vector<double> &data, const std::string header, const std::string location) {
+void save_data(std::vector<double> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
 	file << "# " << header << std::endl;
@@ -366,7 +398,7 @@ void save_double_vector(std::vector<double> &data, const std::string header, con
 }
 
 // Write 1d array to file
-void save_uint_vector(std::vector<unsigned int> &data, const std::string header, const std::string location) {
+void save_data(std::vector<unsigned int> &data, const std::string header, const std::string location) {
 	std::ofstream file;
 	file.open(location);
 	file << "# " << header << std::endl;

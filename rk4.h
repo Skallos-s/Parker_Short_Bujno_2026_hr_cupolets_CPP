@@ -14,6 +14,14 @@
 // Performs autonomous RK4 method and returns next iteration
 array3 rk4(array3 x, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr);
 
+// Runge-Kutta in a state x, time step dt, and dynamics function f.
+// Performs autonomous RK4 method and returns next iteration
+// Impulse is added uniformly to dynamics
+array3 rk4_impulse(array3 x, array3 impulse, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr);
+
+// Finds impulse for RKF to match onto given output
+// Uses binary search
+array3 rk4_reverse(array3 x, array3 target, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr);
 
 // Perform Henon's trick with RK4 method. xi is the initial state after varying
 // array to insert independent variable before the trick. ti is the state of Henon's

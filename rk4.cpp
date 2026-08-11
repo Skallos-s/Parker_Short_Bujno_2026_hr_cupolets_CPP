@@ -7,6 +7,7 @@
 #include "hindmarsh_rose.h"
 
 #include <vector>
+#include <iostream>
 
 // Runge-Kutta in a state x, time step dt, and dynamics function f.
 // Performs autonomous RK4 method and returns next iteration
@@ -16,6 +17,35 @@ array3 rk4(array3 x, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindm
 	array3 k3 = dt * (hr.*f)(x + k2 / 2);
 	array3 k4 = dt * (hr.*f)(x + k3);
 	return x + (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+}
+
+// Runge-Kutta in a state x, time step dt, and dynamics function f.
+// Performs autonomous RK4 method and returns next iteration
+// Impulse is added uniformly to dynamics
+array3 rk4_impulse(array3 x, array3 impulse, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr) {
+	array3 k1 = dt * (impulse + (hr.*f)(x));
+	array3 k2 = dt * (impulse + (hr.*f)(x + k1 / 2));
+	array3 k3 = dt * (impulse + (hr.*f)(x + k2 / 2));
+	array3 k4 = dt * (impulse + (hr.*f)(x + k3));
+	return x + (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+}
+
+// Finds impulse for RKF to match onto given output
+// Uses binary search
+array3 rk4_reverse(array3 x, array3 target, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr) {
+	// Initial guess for impulse
+	array3 guess = (target - rk4(x, dt, f, hr)) / dt;
+	
+	// Descend to optimal impulse
+	for (unsigned int count = 0; count < 500; count++) {
+		// Compute deviation
+		array3 deviation = target - rk4_impulse(x, guess, dt, f, hr);
+		
+		// Modify guess
+		guess += deviation * 10;
+	}
+	
+	return guess;
 }
 
 // Perform Henon's trick with RK4 method. xi is the initial state after varying

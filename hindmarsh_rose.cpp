@@ -66,6 +66,18 @@ array3 hindmarsh_rose::hr_dynamics(array3 state) const {
 	return array3(nx, ny, nz);
 }
 
+// Generates the reversed Hindmarsh-Rose dynamical state based off state (vector of x y z values)
+array3 hindmarsh_rose::hr_dynamics_reversed(array3 state) const {
+	double x,y,z;
+	state.unzip(x, y, z); // Redefine values from state for readability
+	
+	double nx,ny,nz;
+	nx = y - a*x*x*x + b*x*x - z + I;
+	ny = c - d*x*x - y;
+	nz = r * (s * (x - xr) - z);
+	return array3(-nx, -ny, -nz);
+}
+
 // Generates the Hindmarsh-Rose dynamical state based off state (vector of x y z values)
 array3 hindmarsh_rose::hr_dy_dynamics(array3 state, double y) const {
 	double t,x,z;
@@ -77,6 +89,19 @@ array3 hindmarsh_rose::hr_dy_dynamics(array3 state, double y) const {
 	nx = (y - a*x*x*x + b*x*x - z + I) / dy;
 	nz = r * (s * (x - xr) - z) / dy;
 	return array3(nt, nx, nz);
+}
+
+// Generates the Hindmarsh-Rose dynamical state based off state (vector of x y z values)
+array3 hindmarsh_rose::hr_dy_dynamics_reversed(array3 state, double y) const {
+	double t,x,z;
+	state.unzip(t, x, z); // Redefine values from state for readability
+	
+	double dy,nt,nx,nz;
+	dy = c - d*x*x - y;
+	nt = 1 / dy;
+	nx = (y - a*x*x*x + b*x*x - z + I) / dy;
+	nz = r * (s * (x - xr) - z) / dy;
+	return array3(-nt, -nx, -nz);
 }
 
 // Generates the Hindmarsh-Rose dynamical state based off state (vector of x y z values)

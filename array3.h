@@ -22,19 +22,30 @@ public:
 	// Unzip
 	void unzip(double &vx, double &vy, double &vz);
 	
+	// Squared distance
+	friend double squared_distance(const array3 &a1, const array3 &a2);
+	
 	// Operator overloading
 	
 	// Arithmetic operator friends
 	friend array3 operator-(const array3 &a1);
 	friend array3 operator+(const array3 &a1, const array3 &a2);
 	friend array3 operator-(const array3 &a1, const array3 &a2);
+	friend array3 operator*(const array3 &a1, const array3 &a2);
 	friend array3 operator*(const array3 &a1, const double f);
 	friend array3 operator*(const double f, const array3 &a2);
 	friend array3 operator/(const array3 &a1, const double f);
+	
+	// Arithmetic assignment friends
 	friend void operator+=(array3 &a1, const array3 &a2);
 	friend void operator-=(array3 &a1, const array3 &a2);
 	friend void operator*=(array3 &a1, const double f);
+	friend void operator*=(array3 &a1, const array3 &a2);
 	friend void operator/=(array3 &a1, const double f);
+	
+	// Arithmetic comparison friends
+	friend bool operator==(const array3 &a1, const array3 &a2);
+	friend bool operator!=(const array3 &a1, const array3 &a2);
 	
 	// Stream operator friend
 	friend std::ostream& operator<<(std::ostream &out, const array3 &a1);
@@ -52,10 +63,19 @@ array3 operator-(const array3 &a1, const array3 &a2);
 array3 operator*(const array3 &a1, const double f);
 array3 operator*(const double f, const array3 &a2);
 array3 operator/(const array3 &a1, const double f);
+
+// Arithmetic assignment
 void operator+=(array3 &a1, const array3 &a2);
 void operator-=(array3 &a1, const array3 &a2);
 void operator*=(array3 &a1, const double f);
 void operator/=(array3 &a1, const double f);
+
+// Arithmetic comparison
+bool operator==(const array3 &a1, const array3 &a2);
+bool operator!=(const array3 &a1, const array3 &a2);
+
+// Squared distance
+double squared_distance(const array3 &a1, const array3 &a2);
 
 // Stream operators
 std::ostream& operator<<(std::ostream &out, const array3 &a1);
