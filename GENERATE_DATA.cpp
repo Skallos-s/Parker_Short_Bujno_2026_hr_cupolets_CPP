@@ -9,7 +9,7 @@
 #include <iostream>
 #include <vector>
 
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
 
 #include "microcontrol.h"
 #include "macrocontrol.h"
@@ -22,6 +22,7 @@
 #include "helper.h"
 #include "coding_fcn.h"
 #include "time_series.h"
+#include "cupolet_from_impulse.h"
 
 int main(int argc, char* argv[]) {
 	
@@ -93,33 +94,8 @@ int main(int argc, char* argv[]) {
 		std::cout << bin_start[i] << std::endl;
 	}
 	
-	array3 x_start = array3(1.634452765655149298, -3.845121257270092130, 3.346284961480030518);
-	
-	for (unsigned int i = 0; i < 100; i++) {
-		array3 rand_start = array3(std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10);
-		array3 rand_shift = array3(std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10, std::rand() / RAND_MAX / 10);
-		
-		array3 new_start = x_start + rand_start;
-		array3 new_goal  = new_start + rand_shift;
-		
-		array3 x_impulse = rk4_reverse(new_start, new_goal, dt, &hindmarsh_rose::hr_dynamics, hr);
-		
-		array3 x_new = rk4_impulse(new_start, x_impulse, dt, &hindmarsh_rose::hr_dynamics, hr);
-		
-		array3 new_diff = x_new - new_goal;
-		
-		if (new_diff != array3(0,0,0)) {
-			std::cout << i << std::endl;
-			std::cout << new_start << std::endl;
-			std::cout << new_goal << std::endl;
-			std::cout << new_diff << std::endl;
-		}
-	}
-	
-	
-	
-	//save_impulse_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
-	//time_series_from_impulse(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	create_impulse_function(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	create_time_series_from_impulse(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
 	
 	//save_time_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
 	

@@ -381,7 +381,7 @@ std::vector<std::vector<double>> cupolet_time_series(hindmarsh_rose &neuron, dou
 	return time_series;
 }
 
-// Finds all cupolets with given ctrl sequence of length less than limit, that star ton PS1 plane.
+// Finds all cupolets with given ctrl sequence of length less than limit, that start on PS1 plane.
 // Returns start bins of each cupolet
 std::vector<unsigned int> find_cupolets_start_bins(std::vector<unsigned int> &ctrl, const std::string bin_rn_direc, unsigned int limit) {
 	// Read in PS0/PS1 micro/macro control maps.
@@ -802,7 +802,8 @@ void save_time_series(hindmarsh_rose &neuron, double dt, unsigned int bins, unsi
 }
 
 // Generate impulse function for difference between true path and Bezier curve from PS2a to PS2b
-// Reads in neuron stte, dt, number of bins, starting bin, whether a push is done or not, save directories.
+// Reads in neuron state, dt, number of bins, starting bin, whether a push is done or not, save directories.
+// Deprecated
 void save_impulse_function(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int ctrl, const std::string direc, const std::string bin_rn_direc) {
 	// Read in the control plane initial conditions
 	std::vector<array3> ps1inits, ps2ainits, ps2binits;
@@ -911,9 +912,9 @@ void save_impulse_function(hindmarsh_rose &neuron, double dt, unsigned int bins,
 	return;
 }
 
-
 // Generates impulse function for entire cupolet from control sequence and starting bin.
 // Reads in neuron state, dt, number of bins starting bin, control sequence, and save directories.
+// Deprecated
 void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc) {
 	// Read in the control plane initial conditions
 	std::vector<array3> ps0inits, ps1inits, ps2inits;
@@ -1009,9 +1010,6 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 			// Find where trajectory intersects control plane
 			std::vector<double> tyzxp = rk4_henon(array3(t, curr.get(1), curr.get(2)), curr.get(0), -(curr.get(0)-ps0x[0]), &hindmarsh_rose::hr_dx_dynamics, neuron);
 			
-			// Move time forward
-			t = tyzxp[0];
-			
 			// Tick control index
 			ci = (ci + 1) % ctrl.size();
 			
@@ -1021,11 +1019,13 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 			// Apply macrocontrol
 			if (ctrl[ci]) {ii = ps0macro[ii];}
 			
-			
 			// Store impulse into time series
 			array3 impulse_array = ps0inits[ii] - next;
 			row = {t, impulse_array.get(0), impulse_array.get(1), impulse_array.get(2)};
 			impulse_series.push_back(row);
+			
+			// Move time forward
+			t = tyzxp[0];
 			
 			// Center to bin
 			next = ps0inits[ii];
@@ -1053,10 +1053,6 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 			
 			// Snap point to PS2a
 			next = P0;
-			
-			// Store impulse into time series
-			//row = {0, 0, 0, 0};
-			//impulse_series.push_back(row);
 			
 			// Impulse function will be replaced with Bezier curve,
 			SAVE_IMPULSE_FUNCTION = false;
@@ -1098,9 +1094,6 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 			// Final time step for bezier curve
 			t1 = t;
 			
-			std::cout << t0 << std::endl;
-			std::cout << t1 << std::endl;
-			
 			// If bin has been reached in PS1, stop integrating
 			CONTINUE_INTEGRATING = !STOP_INTEGRATING_SOON;
 			
@@ -1123,7 +1116,6 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 			while (true) {
 				// Integrate one step forward
 				array3 next_bez = rk4(curr_bez, dt, &hindmarsh_rose::hr_dynamics, neuron);
-				std::cout << next_bez << std::endl;
 				
 				// Check if PS2b has been crossed
 				if (crossed(curr_bez.get(0), next_bez.get(0), curr_bez.get(1), next_bez.get(1), 1, verts2b)) {
@@ -1131,7 +1123,8 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 					std::vector<double> txzyp_bez = rk4_henon(array3(t_bez, curr_bez.get(0), curr_bez.get(2)), curr_bez.get(1), -(curr_bez.get(1)-ps2y[2]), &hindmarsh_rose::hr_dy_dynamics, neuron);
 					
 					// Store impulse into time series
-					row = {t1 - txzyp_bez[0], P3.get(0) - txzyp_bez[1], P3.get(1) - txzyp_bez[3], P3.get(2) - txzyp_bez[2]};
+					array3 impulse_array = rk4_reverse(curr_bez, P3, dt, &hindmarsh_rose::hr_dynamics, neuron);
+					row = {t1 - txzyp_bez[0], impulse_array.get(0), impulse_array.get(1), impulse_array.get(2)};
 					impulse_series.push_back(row);
 					
 					// Save impulse function now
@@ -1160,7 +1153,8 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 					array3 PBC = P0 * P0C + 3 * P1 * P1C + 3 * P2 * P2C + P3 * P3C;
 					
 					// Store impulse into time series
-					row = {0, PBC.get(0) - next_bez.get(0), PBC.get(1) - next_bez.get(1), PBC.get(2) - next_bez.get(2)};
+					array3 impulse_array = rk4_reverse(curr_bez, PBC, dt, &hindmarsh_rose::hr_dynamics, neuron);
+					row = {0, impulse_array.get(0), impulse_array.get(1), impulse_array.get(2)};
 					impulse_series.push_back(row);
 					
 					// Set new values to old values
@@ -1189,10 +1183,10 @@ void save_impulse_series(hindmarsh_rose &neuron, double dt, unsigned int bins, u
 	return;
 }
 
-
 // Generates impulse function for entire cupolet from control sequence and starting bin.
 // Reads in neuron state, dt, number of bins starting bin, control sequence, and save directories.
 // Generates cupolet from starting bin and impulse series.
+// Deprecated
 void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc) {
 	// Read in the control plane initial conditions
 	std::vector<array3> ps2inits;
@@ -1250,8 +1244,9 @@ void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bi
 	
 	// Cupolet generation loop
 	while (ISC < time_impulse.size()) {
-		// Integrate one step forward
-		array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+		// Integrate one step forward and apply impulse
+		array3 next = rk4_impulse(curr, xyz_impulse[ISC], dt, &hindmarsh_rose::hr_dynamics, neuron);
+		t += time_impulse[ISC];
 		
 		// Check if PS0 has been crossed
 		if (crossed(curr.get(0), next.get(0), curr.get(1), next.get(1), 0, verts0)) {
@@ -1268,10 +1263,6 @@ void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bi
 			row = {t, next.get(0), next.get(1), next.get(2)};
 			time_series.push_back(row);
 			
-			// Apply impulse
-			t += time_impulse[ISC];
-			next += xyz_impulse[ISC];
-			
 			// Store position into time series
 			row = {t, next.get(0), next.get(1), next.get(2)};
 			time_series.push_back(row);
@@ -1286,10 +1277,6 @@ void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bi
 			
 			// Snap point to PS2a
 			next = array3(txzyp[1], txzyp[3], txzyp[2]);
-			
-			// Apply impulse
-			t += time_impulse[ISC];
-			next += xyz_impulse[ISC];
 			
 			// Store position into time series
 			row = {t, next.get(0), next.get(1), next.get(2)};
@@ -1306,10 +1293,6 @@ void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bi
 			// Snap point to PS2b
 			next = array3(txzyp[1], txzyp[3], txzyp[2]);
 			
-			// Apply impulse
-			t += time_impulse[ISC];
-			next += xyz_impulse[ISC];
-			
 			// Store position into time series
 			row = {t, next.get(0), next.get(1), next.get(2)};
 			time_series.push_back(row);
@@ -1318,10 +1301,6 @@ void time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bi
 		} else {
 			// Move time forward
 			t += dt;
-			
-			// Apply impulse
-			t += time_impulse[ISC];
-			next += xyz_impulse[ISC];
 			
 			// Store position into time series
 			row = {t, next.get(0), next.get(1), next.get(2)};
