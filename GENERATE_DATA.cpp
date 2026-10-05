@@ -94,7 +94,9 @@ int main(int argc, char* argv[]) {
 		std::cout << bin_start[i] << std::endl;
 	}
 	
-	create_impulse_function(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	//create_impulse_function(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	
+	create_cupolet(hr, dt, bins, bin_start[k], 50, ctrl, direc, bin_rn_direc);
 	create_time_series_from_impulse(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
 	
 	//save_time_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
