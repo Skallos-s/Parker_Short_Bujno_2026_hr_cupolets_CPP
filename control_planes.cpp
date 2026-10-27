@@ -161,12 +161,12 @@ std::vector<array3> ps_verts(std::vector<double> &vec_x, std::vector<double> &ve
 	
 	if (ps == 0) {
 		// Establish PS0 values
-		verts.push_back(array3(xpmin, ypmin-y_ext, zpmin-z_ext));
-		verts.push_back(array3(xpmin, ypmax+y_ext, zpmax+z_ext));
+		verts.push_back(array3(xpmin, ypmin-y_ext, zpmin-z_ext-0.1));
+		verts.push_back(array3(xpmin, ypmax+y_ext, zpmax+z_ext+0.1));
 	} else { // ps == 1
 		// Establish PS1 values
-		verts.push_back(array3(xpmin-x_ext, yavg, zpmin-z_ext));
-		verts.push_back(array3(xpmax+x_ext, yavg, zpmax+z_ext));
+		verts.push_back(array3(xpmin-x_ext-0.1, yavg, zpmin-z_ext-0.1));
+		verts.push_back(array3(xpmax+x_ext+0.1, yavg, zpmax+z_ext+0.1));
 	}
 	return verts;
 }
@@ -230,12 +230,12 @@ std::vector<array3> ps2_verts(std::vector<double> &vec_x, std::vector<double> &v
 	double z_ext  = 0.01 * abs_diff(zpmax  , zpmin);
 	
 	// Establish PS2a values
-	verts.push_back(array3(xpminA-x_extA, yA, zpmin-z_ext));
-	verts.push_back(array3(xpmaxA+x_extA, yA, zpmax+z_ext));
+	verts.push_back(array3(xpminA-x_extA-0.1, yA, zpmin-z_ext-0.1));
+	verts.push_back(array3(xpmaxA+x_extA+0.1, yA, zpmax+z_ext+0.1));
 	
 	// Establish PS2b values
-	verts.push_back(array3(xpminB-x_extB, yB, zpmin-z_ext));
-	verts.push_back(array3(xpmaxB+x_extB, yB, zpmax+z_ext));
+	verts.push_back(array3(xpminB-x_extB-0.1, yB, zpmin-z_ext-0.1));
+	verts.push_back(array3(xpmaxB+x_extB+0.1, yB, zpmax+z_ext+0.1));
 	
 	return verts;
 }

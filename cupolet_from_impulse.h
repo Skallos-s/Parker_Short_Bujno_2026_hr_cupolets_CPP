@@ -20,9 +20,14 @@ void create_impulse_function(hindmarsh_rose &neuron, double dt, unsigned int bin
 void create_time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
 
 // Generates cupolet and impulse function from control sequence and starting bin. Runs stabilized cupolet for N times.
-// Reads in neuron state, dt, number of bins starting bin, control sequence, and save directories.
+// Reads in neuron state, dt, number of bins, starting bin, number of loops N, control sequence, and save directories.
 // Series is time-aligned with multiples of dt.
-void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int N, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
+// save_mode for overwriting standard saving convention
+void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int N, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc, bool save_mode = false);
+
+
+void create_linked_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin_driver, unsigned int start_bin_linked, double error, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
+
 
 
 #endif

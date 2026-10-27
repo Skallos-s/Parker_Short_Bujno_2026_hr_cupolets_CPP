@@ -3,6 +3,7 @@
 // Author: Daniel Bujno
 
 #include <cassert>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <cstdlib>
@@ -26,7 +27,7 @@
 
 int main(int argc, char* argv[]) {
 	
-	// FLAGS
+	// GENERATION FLAGS
 	bool GENERATE_TIME_SERIES_DATA  = false;
 	bool GENERATE_CONTROL_PLANE     = false;
 	bool GENERATE_PS2_CONTROL_PLANE = false;
@@ -35,6 +36,10 @@ int main(int argc, char* argv[]) {
 	bool GENERATE_PS2_INITIAL_PTS   = false;
 	bool GENERATE_PS2_PREIMAGE      = false;
 	bool ESTABLISH_MICRO_MACRO      = false;
+	
+	// SIMULATION FLAGS
+	bool RUN_ONE_CUPOLET  = false;
+	bool RUN_ALL_CUPOLETS = true;
 	
 	// Hindmarsh Rose attractor
 	hindmarsh_rose hr = hindmarsh_rose();
@@ -83,21 +88,99 @@ int main(int argc, char* argv[]) {
 		establish_macrocontrol(bin_rn_direc);
 	}
 
-	// Single cupolet
-	std::vector<unsigned int> ctrl{0,0,1};
-	unsigned int k = 2;
 	
-	std::vector<unsigned int> bin_start = find_cupolets_start_bins(ctrl, bin_rn_direc);
-	std::cout << bin_start.size() << std::endl;
 	
-	for (unsigned int i = 0; i < bin_start.size(); i++) {
-		std::cout << bin_start[i] << std::endl;
+	
+	if (RUN_ONE_CUPOLET) {
+		// Single cupolet
+		std::vector<unsigned int> ctrl{0,0,1};
+		
+		// Starting bin locations for cupolets
+		std::vector<unsigned int> bin_start = find_cupolets_start_bins(ctrl, bin_rn_direc);
+		
+		std::cout << "Number of Cupolets Found: " << bin_start.size() << std::endl;
+		
+		// Cupolet choice
+		unsigned int CUPOLET_INDEX = 0;
+		
+		// Bound index
+		CUPOLET_INDEX = std::min(CUPOLET_INDEX, static_cast<unsigned int>(bin_start.size()));
+		
+		// How many periods to record
+		unsigned int PERIOD_COUNT = 50;
+		
+		create_cupolet(hr, dt, bins, bin_start[CUPOLET_INDEX], PERIOD_COUNT, ctrl, direc, bin_rn_direc);
+		create_time_series_from_impulse(hr, dt, bins, bin_start[CUPOLET_INDEX], ctrl, direc, bin_rn_direc);
 	}
 	
-	//create_impulse_function(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	if (RUN_ALL_CUPOLETS) {
+		// Create save directory for all cupolets
+		check_direc(bin_rn_direc + "/primitive_cupolets");
+		
+		// Loop over control sequence lengths
+		for (int length = 1; length <= 6; length++) {
+			// Loop over control sequences of set length
+			// Encoded as binary
+			for (int ctrl_binary = 0; ctrl_binary < 1 << length; ctrl_binary++) {
+				// Flag for non-primitivity detection
+				bool skip_ctrl = false;
+				
+				// Loop over all non-trivial cyclic permutations to check primitivity of control sequence
+				for (int cyc_perm = 1; cyc_perm < length; cyc_perm++) {
+					int val1 = ctrl_binary >> cyc_perm;               // left-most (length-cyc_perm) bits of ctrl_binary
+					int val2 = ctrl_binary & ((1 << cyc_perm) - 1);     // right-most cyc_perm bits of ctrl_binary
+					int val3 = val1 + (val2 << (length - cyc_perm)); // cyclic permutation of ctrl_binary
+					
+					// If a non-trivial cyclic permutation is equal to the original ctrl sequence, it is not primitive
+					// If not primitive, break out of loop
+					skip_ctrl = val3 == ctrl_binary;
+					if (skip_ctrl) {break;}
+				}
+				
+				// If not primitive, skip loop iteration
+				if (skip_ctrl) {continue;}
+				
+				// Cupolet name string and array
+				std::string cupolet_name = "C";
+				std::vector<unsigned int> ctrl;
+				for (unsigned int i = length; i > 0; i--) {
+					cupolet_name += (ctrl_binary >> (i - 1) & 1) ? "1" : "0";
+					ctrl.push_back(ctrl_binary >> (i - 1) & 1);
+				}
+				
+				std::cout << "Finding cupolets " << cupolet_name << std::endl;
+				
+				// Control sequence folder file path
+				std::string ctrl_direc = bin_rn_direc + "/primitive_cupolets/" + cupolet_name;
+				
+				// Create save directory for given control sequence
+				check_direc(ctrl_direc);
+				
+				// Starting bin locations for cupolets
+				std::vector<unsigned int> bin_start = find_cupolets_start_bins(ctrl, bin_rn_direc);
+				
+				// Loop over bin starts
+				for (unsigned int bin_index = 0; bin_index < bin_start.size(); bin_index++) {
+					// Cupolet folder file path
+					std::string cupolet_direc = ctrl_direc + "/bin_" + std::to_string(bin_start[bin_index]);
+					
+					std::cout << "  Bin " << bin_start[bin_index] << std::endl;
+					
+					// Create save directory for given cupolet
+					check_direc(cupolet_direc);
+					check_direc(cupolet_direc + "/text_data");
+					check_direc(cupolet_direc + "/image_data");
+					
+					create_cupolet(hr, dt, bins, bin_start[bin_index], 1, ctrl, direc, bin_rn_direc, true);
+					create_cupolet(hr, dt, bins, bin_start[bin_index], 50, ctrl, direc, bin_rn_direc, true);
+				}
+			}
+		}
+		
+	}
 	
-	create_cupolet(hr, dt, bins, bin_start[k], 50, ctrl, direc, bin_rn_direc);
-	create_time_series_from_impulse(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
+	
+	//create_linked_cupolet(hr, dt, bins, bin_start[k], bin_start[k]+20, 0.0001, ctrl, direc, bin_rn_direc);
 	
 	//save_time_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
 	
