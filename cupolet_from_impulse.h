@@ -26,7 +26,7 @@ void create_time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned
 void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int N, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc, bool save_mode = false);
 
 
-void create_linked_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin_driver, unsigned int start_bin_linked, double error, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
+//void create_linked_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin_driver, unsigned int start_bin_linked, double error, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc);
 
 
 

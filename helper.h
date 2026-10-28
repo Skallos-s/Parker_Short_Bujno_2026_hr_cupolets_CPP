@@ -36,6 +36,12 @@ void save_data(std::vector<double> &data, const std::string header, const std::s
 void save_data(std::vector<unsigned int> &data, const std::string header, const std::string location);
 void save_binary(std::vector<std::vector<unsigned int>> &map, const std::string header, const std::string location);
 
+// Write single rot to file
+void save_datum(double value, std::ofstream &file);
+void save_datum(double value1, double value2, double value3, std::ofstream &file);
+void save_datum(array3 array, std::ofstream &file);
+void save_datum(double value, array3 array, std::ofstream &file);
+
 // Signum function
 // From https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 template <typename T> int sgn(T val) {

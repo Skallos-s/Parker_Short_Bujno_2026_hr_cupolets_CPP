@@ -38,8 +38,8 @@ int main(int argc, char* argv[]) {
 	bool ESTABLISH_MICRO_MACRO      = false;
 	
 	// SIMULATION FLAGS
-	bool RUN_ONE_CUPOLET  = false;
-	bool RUN_ALL_CUPOLETS = true;
+	bool RUN_ONE_CUPOLET  = true;
+	bool RUN_ALL_CUPOLETS = false;
 	
 	// Hindmarsh Rose attractor
 	hindmarsh_rose hr = hindmarsh_rose();
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 	
 	if (RUN_ALL_CUPOLETS) {
 		// Create save directory for all cupolets
-		check_direc(bin_rn_direc + "/primitive_cupolets");
+		check_direc(bin_rn_direc + "/fundamental_cupolets");
 		
 		// Loop over control sequence lengths
 		for (int length = 1; length <= 6; length++) {
@@ -131,13 +131,13 @@ int main(int argc, char* argv[]) {
 					int val2 = ctrl_binary & ((1 << cyc_perm) - 1);     // right-most cyc_perm bits of ctrl_binary
 					int val3 = val1 + (val2 << (length - cyc_perm)); // cyclic permutation of ctrl_binary
 					
-					// If a non-trivial cyclic permutation is equal to the original ctrl sequence, it is not primitive
-					// If not primitive, break out of loop
+					// If a non-trivial cyclic permutation is equal to the original ctrl sequence, it is not fundamental
+					// If not fundamental, break out of loop
 					skip_ctrl = val3 == ctrl_binary;
 					if (skip_ctrl) {break;}
 				}
 				
-				// If not primitive, skip loop iteration
+				// If not fundamental, skip loop iteration
 				if (skip_ctrl) {continue;}
 				
 				// Cupolet name string and array
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
 				std::cout << "Finding cupolets " << cupolet_name << std::endl;
 				
 				// Control sequence folder file path
-				std::string ctrl_direc = bin_rn_direc + "/primitive_cupolets/" + cupolet_name;
+				std::string ctrl_direc = bin_rn_direc + "/fundamental_cupolets/" + cupolet_name;
 				
 				// Create save directory for given control sequence
 				check_direc(ctrl_direc);

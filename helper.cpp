@@ -422,6 +422,39 @@ void save_binary(std::vector<std::vector<unsigned int>> &map, const std::string 
 	file.close();
 }
 
+// Write double to file
+void save_datum(double value, std::ofstream &file) {
+	// double precision
+	file << std::scientific;
+	file << std::setprecision(18);
+	file << value << std::endl;
+}
+
+// Write three doubles to file
+void save_datum(double value1, double value2, double value3, std::ofstream &file) {
+	// double precision
+	file << std::scientific;
+	file << std::setprecision(18);
+	file << value1 << "\t" << value2 << "\t" << value3 << "\t" << std::endl;
+}
+
+// Write array3 to file
+void save_datum(array3 array, std::ofstream &file) {
+	// double precision
+	file << std::scientific;
+	file << std::setprecision(18);
+	file << array.get(0) << "\t" << array.get(1) << "\t" << array.get(2) << std::endl;
+}
+
+// Write double and array3 to file
+void save_datum(double value, array3 array, std::ofstream &file) {
+	// double precision
+	file << std::scientific;
+	file << std::setprecision(18);
+	file << value << "\t";
+	file << array.get(0) << "\t" << array.get(1) << "\t" << array.get(2) << std::endl;
+}
+
 // Evaluate a polynomial with ax^n+...+b where poly_coords=<a,...,b>
 double eval_poly(std::vector<double> &poly_coords, double x) {
 	double y = 0;
