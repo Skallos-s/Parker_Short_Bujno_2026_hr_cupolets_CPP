@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 	
 	if (RUN_ONE_CUPOLET) {
 		// Single cupolet
-		std::vector<unsigned int> ctrl{0,0,1};
+		std::vector<unsigned int> ctrl{0};
 		
 		// Starting bin locations for cupolets
 		std::vector<unsigned int> bin_start = find_cupolets_start_bins(ctrl, bin_rn_direc);
@@ -106,8 +106,10 @@ int main(int argc, char* argv[]) {
 		// Bound index
 		CUPOLET_INDEX = std::min(CUPOLET_INDEX, static_cast<unsigned int>(bin_start.size()));
 		
+		std::cout << "Simulating Cupolet Starting on Bin " << bin_start[CUPOLET_INDEX] << std::endl;
+		
 		// How many periods to record
-		unsigned int PERIOD_COUNT = 50;
+		unsigned int PERIOD_COUNT = 1;
 		
 		create_cupolet(hr, dt, bins, bin_start[CUPOLET_INDEX], PERIOD_COUNT, ctrl, direc, bin_rn_direc);
 		create_time_series_from_impulse(hr, dt, bins, bin_start[CUPOLET_INDEX], ctrl, direc, bin_rn_direc);

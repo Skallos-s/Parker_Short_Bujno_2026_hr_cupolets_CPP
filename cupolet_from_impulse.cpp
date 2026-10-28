@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 #include <iostream>
 
 
@@ -395,6 +396,12 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 	verts2b.push_back(array3(ps2x[2], ps2y[2], 0));
 	verts2b.push_back(array3(ps2x[3], ps2y[3], 0));
 	
+	// Cupolet name string
+	std::string cupolet_name = "C";
+	for (unsigned int i = 0; i < ctrl.size(); i++) {
+		cupolet_name += (ctrl[i]) ? "1" : "0";
+	}
+	
 	// Files for impulse, offsets, and time series
 	std::ofstream impulse_file, offsets_file, cupolet_file;
 	
@@ -423,9 +430,6 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 	offsets_file << "# " << "Impulse offsets of cupolet " + cupolet_name << std::endl;
 	cupolet_file << "# " << "Time series data of cupolet " + cupolet_name << std::endl;
 	
-	// Initialize cupolet time, impulse, and offset series vectors
-	std::vector<double> row;
-
 	// Index of control
 	unsigned int ci = 0;
 	
@@ -460,12 +464,6 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 	// Indicate that the starting bin on PS1 has been reached
 	PS1_reached[start_bin] = 1;
 	
-	// Cupolet name string
-	std::string cupolet_name = "C";
-	for (unsigned int i = 0; i < ctrl.size(); i++) {
-		cupolet_name += (ctrl[i]) ? "1" : "0";
-	}
-	
 	// Cupolet generation loop
 	while (CONTINUE_INTEGRATING) {
 		
@@ -492,10 +490,12 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 			// Integrate from center of bin
 			next = rk4(ps0inits[ii], t - tyzxp[0], &hindmarsh_rose::hr_dynamics, neuron);
 			
-			// Store impulse and cupolet position
+			// Store offsets, impulse and cupolet position
 			array3 impulse_array = rk4_reverse(curr, next, dt, &hindmarsh_rose::hr_dynamics, neuron);
 			save_datum(t, next, cupolet_file);
 			save_datum(impulse_array, impulse_file);
+			save_datum(dt + tyzxp[0] - t, offsets_file);
+			
 			
 			// If bin has been reached at the start of control sequence already,
 			// set flag to false. Then increment bin counter
@@ -545,9 +545,6 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 			
 			// Center to bin
 			next = ps1inits[ii];
-			
-			// Save Bezier impulse offsets
-			save_datum(txzyp[0] - t, offsets_file);
 			
 			// If bin has been reached at the start of control sequence already,
 			// set flag to true. Then mark bin as having been reached
