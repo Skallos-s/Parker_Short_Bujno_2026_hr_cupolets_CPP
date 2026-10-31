@@ -190,12 +190,12 @@ int main(int argc, char* argv[]) {
 	// Generate all impulses for each starting bin on PS2a
 	if (GENERATE_IMPULSE) {
 		// Create save directories for impulse data
-		check_direc(bin_rn_direc + "/impulse_data");
-		check_direc(bin_rn_direc + "/impulse_data/kick");
-		check_direc(bin_rn_direc + "/impulse_data/no_kick");
+		check_direc(bin_rn_direc + "/bezier_impulses");
+		check_direc(bin_rn_direc + "/bezier_impulses/kick");
+		check_direc(bin_rn_direc + "/bezier_impulses/no_kick");
 		
 		// Loop over sarting bins
-		for (unsigned int k = 0; k < 10; k++) {
+		for (unsigned int k = 0; k < bins; k++) {
 			bezier_impulse(hr, dt, bins, k, DENSITY, true , direc, bin_rn_direc);
 			bezier_impulse(hr, dt, bins, k, DENSITY, false, direc, bin_rn_direc);
 		}

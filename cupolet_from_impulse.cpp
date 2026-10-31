@@ -673,7 +673,7 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 
 // Generates impulse curves along a given bin preimage from PS1 onto PS2a. N+1 points are sampled between PS2a and PS2b inclusive
 // Reads in neuron state, dt, number of bins, starting bin, whether to kick, and save directories.
-void bezier_impulse(hindmarsh_rose &neuron, double dt, int bins, unsigned int start_bin, unsigned int N, bool kick, const std::string direc, const std::string bin_rn_direc) {
+void bezier_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int N, bool kick, const std::string direc, const std::string bin_rn_direc) {
 	// Read in the PS2a control plane initial conditions
 	std::vector<array3> ps2ainits;
 	loadtxt_1(ps2ainits, bin_rn_direc + "/coding_fcn/ps2a_bin_inits.txt");
@@ -684,11 +684,15 @@ void bezier_impulse(hindmarsh_rose &neuron, double dt, int bins, unsigned int st
 	
 	// Read in PS0/PS1 macrocontrol maps.
 	std::vector<unsigned int> ps1macro;
-	
 	loadtxt_1(ps1macro, bin_rn_direc + "/macrocontrol/ps1_macrocontrol.txt");
 	
-	// Files for impulse, offsets, and time series
-	std::ofstream impulse_file, impulse_file;
+	// Plane data used for checking crossing
+	std::vector<array3> verts2b;
+	verts2b.push_back(array3(ps2x[2], ps2y[2], 0));
+	verts2b.push_back(array3(ps2x[3], ps2y[3], 0));
+	
+	// File for impulse
+	std::ofstream impulse_file;
 	
 	// Is kick performed?
 	if (kick) {
@@ -696,14 +700,14 @@ void bezier_impulse(hindmarsh_rose &neuron, double dt, int bins, unsigned int st
 		impulse_file.open(bin_rn_direc + "/bezier_impulses/kick/bin_" + std::to_string(start_bin) + "_kick.txt");
 		
 		// Save header for each file
-		impulse_file << "# " << "Bezier impulse with kick starting on bin" + cupolet_name << std::endl;
+		impulse_file << "# " << "Bezier impulse with kick starting on bin" + std::to_string(start_bin) << std::endl;
 		
 	} else {
 		// Open file
 		impulse_file.open(bin_rn_direc + "/bezier_impulses/no_kick/bin_" + std::to_string(start_bin) + "_no_kick.txt");
 		
 		// Save header for each file
-		impulse_file << "# " << "Bezier impulse without kick starting on bin" + cupolet_name << std::endl;
+		impulse_file << "# " << "Bezier impulse without kick starting on bin" + std::to_string(start_bin) << std::endl;
 	}
 	
 	// Start with t = 0
@@ -744,6 +748,9 @@ void bezier_impulse(hindmarsh_rose &neuron, double dt, int bins, unsigned int st
 		
 		// Increment time
 		t += dt;
+		
+		// Set new values to old values
+		curr = next;
 	}
 	
 	// Starting point for computing impulse
@@ -802,7 +809,7 @@ void bezier_impulse(hindmarsh_rose &neuron, double dt, int bins, unsigned int st
 		
 		// Store impulse
 		array3 impulse = rk4_reverse(R0, R1, dt, &hindmarsh_rose::hr_dynamics, neuron);
-		save_datum(t_rel, impulse_array, impulse_file);
+		save_datum(t_rel, impulse, impulse_file);
 	}
 	
 	// Close files

@@ -55,12 +55,12 @@ array3 rk4_undo(array3 x, double dt, array3 (hindmarsh_rose::*f)(array3) const, 
 	array3 guess = 2 * x - rk4(x, dt, f, hr);
 	
 	// Descend to optimal impulse
-	for (unsigned int count = 0; count < 500; count++) {
+	for (unsigned int count = 0; count < 20; count++) {
 		// Compute deviation
 		array3 deviation = x - rk4(guess, dt, f, hr);
 		
 		// Modify guess
-		guess += deviation * 10;
+		guess += deviation;
 	}
 	
 	return guess;

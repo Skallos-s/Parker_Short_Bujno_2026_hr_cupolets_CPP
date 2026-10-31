@@ -25,7 +25,7 @@ void create_time_series_from_impulse(hindmarsh_rose &neuron, double dt, unsigned
 // save_mode for overwriting standard saving convention
 void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int N, std::vector<unsigned int> &ctrl, const std::string direc, const std::string bin_rn_direc, bool save_mode = false);
 
-// Generates impulse curves along a given bin preimage from PS1 onto PS2a. Distance between measured points is dt/N.
+// Generates impulse curves along a given bin preimage from PS1 onto PS2a. N+1 points are sampled between PS2a and PS2b inclusive
 // Reads in neuron state, dt, number of bins, starting bin, whether to kick, and save directories.
 void bezier_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, unsigned int N, bool kick, const std::string direc, const std::string bin_rn_direc);
 
