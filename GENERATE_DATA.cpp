@@ -38,8 +38,13 @@ int main(int argc, char* argv[]) {
 	bool ESTABLISH_MICRO_MACRO      = false;
 	
 	// SIMULATION FLAGS
-	bool RUN_ONE_CUPOLET  = true;
+	bool RUN_ONE_CUPOLET  = false;
 	bool RUN_ALL_CUPOLETS = false;
+	bool GENERATE_IMPULSE = true;
+	
+	// Simulation data
+	unsigned int PERIODS = 1;  // Number of periods to run a cupolet
+	unsigned int DENSITY = 50; // Number of sampled intervals for impulse function
 	
 	// Hindmarsh Rose attractor
 	hindmarsh_rose hr = hindmarsh_rose();
@@ -90,7 +95,7 @@ int main(int argc, char* argv[]) {
 
 	
 	
-	
+	// Run a single cupolet and save to a shared file
 	if (RUN_ONE_CUPOLET) {
 		// Single cupolet
 		std::vector<unsigned int> ctrl{0};
@@ -108,19 +113,19 @@ int main(int argc, char* argv[]) {
 		
 		std::cout << "Simulating Cupolet Starting on Bin " << bin_start[CUPOLET_INDEX] << std::endl;
 		
-		// How many periods to record
-		unsigned int PERIOD_COUNT = 1;
-		
-		create_cupolet(hr, dt, bins, bin_start[CUPOLET_INDEX], PERIOD_COUNT, ctrl, direc, bin_rn_direc);
-		create_time_series_from_impulse(hr, dt, bins, bin_start[CUPOLET_INDEX], ctrl, direc, bin_rn_direc);
+		create_cupolet(hr, dt, bins, bin_start[CUPOLET_INDEX], PERIODS, ctrl, direc, bin_rn_direc);
+		//create_time_series_from_impulse(hr, dt, bins, bin_start[CUPOLET_INDEX], ctrl, direc, bin_rn_direc);
 	}
 	
+	
+	
+	// Run all cupolets and save to nested structure in fundamental_cupolets
 	if (RUN_ALL_CUPOLETS) {
 		// Create save directory for all cupolets
 		check_direc(bin_rn_direc + "/fundamental_cupolets");
 		
 		// Loop over control sequence lengths
-		for (int length = 1; length <= 6; length++) {
+		for (int length = 1; length <= 3; length++) {
 			// Loop over control sequences of set length
 			// Encoded as binary
 			for (int ctrl_binary = 0; ctrl_binary < 1 << length; ctrl_binary++) {
@@ -174,13 +179,27 @@ int main(int argc, char* argv[]) {
 					check_direc(cupolet_direc + "/image_data");
 					
 					create_cupolet(hr, dt, bins, bin_start[bin_index], 1, ctrl, direc, bin_rn_direc, true);
-					create_cupolet(hr, dt, bins, bin_start[bin_index], 50, ctrl, direc, bin_rn_direc, true);
 				}
 			}
 		}
 		
 	}
 	
+	
+	
+	// Generate all impulses for each starting bin on PS2a
+	if (GENERATE_IMPULSE) {
+		// Create save directories for impulse data
+		check_direc(bin_rn_direc + "/impulse_data");
+		check_direc(bin_rn_direc + "/impulse_data/kick");
+		check_direc(bin_rn_direc + "/impulse_data/no_kick");
+		
+		// Loop over sarting bins
+		for (unsigned int k = 0; k < 10; k++) {
+			bezier_impulse(hr, dt, bins, k, DENSITY, true , direc, bin_rn_direc);
+			bezier_impulse(hr, dt, bins, k, DENSITY, false, direc, bin_rn_direc);
+		}
+	}
 	
 	//create_linked_cupolet(hr, dt, bins, bin_start[k], bin_start[k]+20, 0.0001, ctrl, direc, bin_rn_direc);
 	

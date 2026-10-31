@@ -48,6 +48,24 @@ array3 rk4_reverse(array3 x, array3 target, double dt, array3 (hindmarsh_rose::*
 	return guess;
 }
 
+// Finds a point that integrates onto x
+// Uses binary search
+array3 rk4_undo(array3 x, double dt, array3 (hindmarsh_rose::*f)(array3) const, hindmarsh_rose &hr) {
+	// Initial guess for previous point
+	array3 guess = 2 * x - rk4(x, dt, f, hr);
+	
+	// Descend to optimal impulse
+	for (unsigned int count = 0; count < 500; count++) {
+		// Compute deviation
+		array3 deviation = x - rk4(guess, dt, f, hr);
+		
+		// Modify guess
+		guess += deviation * 10;
+	}
+	
+	return guess;
+}
+
 // Perform Henon's trick with RK4 method. xi is the initial state after varying
 // array to insert independent variable before the trick. ti is the state of Henon's
 // independent variable. dd is the distance to travel and f is the dynamics for Henon's trick.

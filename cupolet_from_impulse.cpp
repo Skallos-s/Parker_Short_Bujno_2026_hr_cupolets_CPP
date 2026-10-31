@@ -663,5 +663,150 @@ void create_cupolet(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 		curr = next;
 	}
 	
+	// Close files
+	impulse_file.close();
+	offsets_file.close();
+	cupolet_file.close();
+	
+	return;
+}
+
+// Generates impulse curves along a given bin preimage from PS1 onto PS2a. N+1 points are sampled between PS2a and PS2b inclusive
+// Reads in neuron state, dt, number of bins, starting bin, whether to kick, and save directories.
+void bezier_impulse(hindmarsh_rose &neuron, double dt, int bins, unsigned int start_bin, unsigned int N, bool kick, const std::string direc, const std::string bin_rn_direc) {
+	// Read in the PS2a control plane initial conditions
+	std::vector<array3> ps2ainits;
+	loadtxt_1(ps2ainits, bin_rn_direc + "/coding_fcn/ps2a_bin_inits.txt");
+	
+	// Read in the vertices of each control plane
+	std::vector<double> ps2x, ps2y, ps2z;
+	loadtxt_3(ps2x, ps2y, ps2z, direc + "/control_planes/ps2_vertices.txt");
+	
+	// Read in PS0/PS1 macrocontrol maps.
+	std::vector<unsigned int> ps1macro;
+	
+	loadtxt_1(ps1macro, bin_rn_direc + "/macrocontrol/ps1_macrocontrol.txt");
+	
+	// Files for impulse, offsets, and time series
+	std::ofstream impulse_file, impulse_file;
+	
+	// Is kick performed?
+	if (kick) {
+		// Open file
+		impulse_file.open(bin_rn_direc + "/bezier_impulses/kick/bin_" + std::to_string(start_bin) + "_kick.txt");
+		
+		// Save header for each file
+		impulse_file << "# " << "Bezier impulse with kick starting on bin" + cupolet_name << std::endl;
+		
+	} else {
+		// Open file
+		impulse_file.open(bin_rn_direc + "/bezier_impulses/no_kick/bin_" + std::to_string(start_bin) + "_no_kick.txt");
+		
+		// Save header for each file
+		impulse_file << "# " << "Bezier impulse without kick starting on bin" + cupolet_name << std::endl;
+	}
+	
+	// Start with t = 0
+	double t = 0;
+	
+	// Bezier curve data
+	double t_delta;
+	array3 P1, P2, P3, Q2;
+	array3 P0 = ps2ainits[start_bin];
+	array3 Q1 = neuron.hr_dynamics(P0);
+	
+	// Initial point on PS2a
+	// Preimages integrate onto PS1 inits, at which point a kick can be performed
+	// Kick can be replicated by kicking the starting bin
+	array3 curr = kick ? ps2ainits[ps1macro[start_bin]] : ps2ainits[start_bin];
+	
+	// Integrate until corresponding point on PS2b is reached.
+	while (true) {
+		// Integrate one step forward
+		array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+		
+		// Check if PS2b has been crossed
+		if (crossed(curr.get(0), next.get(0), curr.get(1), next.get(1), 1, verts2b)) {
+			// Find where trajectory intersects control plane
+			std::vector<double> txzyp = rk4_henon(array3(t, curr.get(0), curr.get(2)), curr.get(1), -(curr.get(1)-ps2y[2]), &hindmarsh_rose::hr_dy_dynamics, neuron);
+			
+			// Save finishing time
+			t_delta = txzyp[0];
+			
+			// Control points and pseudo control points for bezier curve
+			P3 = array3(txzyp[1], txzyp[3], txzyp[2]);
+			Q2 = neuron.hr_dynamics(P3);
+			P1 = P0 + Q1 / 3 * t_delta;
+			P2 = P3 - Q2 / 3 * t_delta;
+			
+			break;
+		}
+		
+		// Increment time
+		t += dt;
+	}
+	
+	// Starting point for computing impulse
+	array3 start = rk4_undo(P0, dt, &hindmarsh_rose::hr_dynamics, neuron);
+	
+	// Time difference between starting point and ending point
+	double t_span = t_delta + dt;
+	
+	// Compute impulse function
+	for (unsigned int k = 0; k <= N; k++) {
+		// Time along bezier transition
+		// A negative time is a point before the bezier transition
+		// A time within dt of t_delta will integrate past the bezier transition
+		double t_rel = t_span * k / N - dt;
+		
+		// Start and end point for determining impulse
+		array3 R0, R1;
+		
+		// If t_rel is negative, R0 is not on bezier transition
+		if (t_rel < 0) {
+			R0 = rk4(start, dt + t_rel, &hindmarsh_rose::hr_dynamics, neuron);
+		} else {
+			// Normalized Bezier time
+			double t_bez_norm = t_rel / t_delta;
+			double t_bez_nrev = 1 - t_bez_norm;
+			// Maybe normalize time so that PBC and next have the same y-coord?
+			
+			// Polynomials (1-t)^3, t(1-t)^2, t^2(1-t), and t^3
+			double P0C = t_bez_nrev * t_bez_nrev * t_bez_nrev;
+			double P1C = t_bez_nrev * t_bez_nrev * t_bez_norm;
+			double P2C = t_bez_nrev * t_bez_norm * t_bez_norm;
+			double P3C = t_bez_norm * t_bez_norm * t_bez_norm;
+			
+			// Corresponding point on Bezier curve
+			R0 = P0 * P0C + 3 * P1 * P1C + 3 * P2 * P2C + P3 * P3C;
+		}
+		
+		// If t_rel is within dt of t_delta, R1 is not on bezier transition
+		if (t_rel + dt > t_delta) {
+			R1 = rk4(P3, t_rel + dt - t_delta, &hindmarsh_rose::hr_dynamics, neuron);
+		} else {
+			// Normalized Bezier time
+			double t_bez_norm = (t_rel + dt) / t_delta;
+			double t_bez_nrev = 1 - t_bez_norm;
+			// Maybe normalize time so that PBC and next have the same y-coord?
+			
+			// Polynomials (1-t)^3, t(1-t)^2, t^2(1-t), and t^3
+			double P0C = t_bez_nrev * t_bez_nrev * t_bez_nrev;
+			double P1C = t_bez_nrev * t_bez_nrev * t_bez_norm;
+			double P2C = t_bez_nrev * t_bez_norm * t_bez_norm;
+			double P3C = t_bez_norm * t_bez_norm * t_bez_norm;
+			
+			// Corresponding point on Bezier curve
+			R1 = P0 * P0C + 3 * P1 * P1C + 3 * P2 * P2C + P3 * P3C;
+		}
+		
+		// Store impulse
+		array3 impulse = rk4_reverse(R0, R1, dt, &hindmarsh_rose::hr_dynamics, neuron);
+		save_datum(t_rel, impulse_array, impulse_file);
+	}
+	
+	// Close files
+	impulse_file.close();
+	
 	return;
 }
