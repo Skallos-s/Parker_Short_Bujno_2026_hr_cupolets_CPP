@@ -682,7 +682,7 @@ void bezier_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 	std::vector<double> ps2x, ps2y, ps2z;
 	loadtxt_3(ps2x, ps2y, ps2z, direc + "/control_planes/ps2_vertices.txt");
 	
-	// Read in PS0/PS1 macrocontrol maps.
+	// Read in PS1 macrocontrol map.
 	std::vector<unsigned int> ps1macro;
 	loadtxt_1(ps1macro, bin_rn_direc + "/macrocontrol/ps1_macrocontrol.txt");
 	
@@ -815,5 +815,138 @@ void bezier_impulse(hindmarsh_rose &neuron, double dt, unsigned int bins, unsign
 	// Close files
 	impulse_file.close();
 	
+	return;
+}
+
+// Generates path that dynamical system would take vs Bezier path
+// Reads in neuron state, dt, number of bins, starting bin, and save directories.
+void compare_paths(hindmarsh_rose &neuron, double dt, unsigned int bins, unsigned int start_bin, const std::string direc, const std::string bin_rn_direc) {
+	// Read in the PS2a control plane initial conditions
+	std::vector<array3> ps2ainits;
+	loadtxt_1(ps2ainits, bin_rn_direc + "/coding_fcn/ps2a_bin_inits.txt");
+
+	// Read in the vertices of each control plane
+	std::vector<double> ps2x, ps2y, ps2z;
+	loadtxt_3(ps2x, ps2y, ps2z, direc + "/control_planes/ps2_vertices.txt");
+
+	// Read in PS0/PS1 macrocontrol maps.
+	std::vector<unsigned int> ps1macro;
+	loadtxt_1(ps1macro, bin_rn_direc + "/macrocontrol/ps1_macrocontrol.txt");
+
+	// Plane data used for checking crossing
+	std::vector<array3> verts2b;
+	verts2b.push_back(array3(ps2x[2], ps2y[2], 0));
+	verts2b.push_back(array3(ps2x[3], ps2y[3], 0));
+
+	// File for paths
+	std::ofstream bezier_file, system_file;
+
+	// Open file
+	bezier_file.open(bin_rn_direc + "/path_comparisons/bezier_path/bin_" + std::to_string(start_bin) + "_bezier.txt");
+	system_file.open(bin_rn_direc + "/path_comparisons/system_path/bin_" + std::to_string(start_bin) + "_system.txt");
+
+	// Save header for each file
+	bezier_file << "# " << "Bezier path starting on bin" + std::to_string(start_bin) << std::endl;
+	system_file << "# " << "System path starting on bin" + std::to_string(start_bin) << std::endl;
+
+	// Start with t = 0
+	double t = 0;
+
+	// Bezier curve data
+	double t_delta;
+	array3 P1, P2, P3, Q2;
+	array3 P0 = ps2ainits[start_bin];
+	array3 Q1 = neuron.hr_dynamics(P0);
+
+	// Initial point on PS2a
+	// Preimages integrate onto PS1 inits, at which point a kick can be performed
+	array3 curr = ps2ainits[start_bin];
+
+	// Save starting point
+	save_datum(0, curr, bezier_file);
+	save_datum(0, curr, system_file);
+
+	// Integrate until corresponding point on PS2b is reached.
+	while (true) {
+		// Integrate one step forward
+		array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+
+		// Save path along dynamical system
+		save_datum(t, curr, system_file);
+
+		// Check if PS2b has been crossed
+		if (crossed(curr.get(0), next.get(0), curr.get(1), next.get(1), 1, verts2b)) {
+			// Find where trajectory intersects control plane
+			std::vector<double> txzyp = rk4_henon(array3(t, curr.get(0), curr.get(2)), curr.get(1), -(curr.get(1)-ps2y[2]), &hindmarsh_rose::hr_dy_dynamics, neuron);
+
+			// Save finishing time
+			t_delta = txzyp[0];
+
+			// Control points and pseudo control points for bezier curve
+			P3 = array3(txzyp[1], txzyp[3], txzyp[2]);
+			Q2 = neuron.hr_dynamics(P3);
+			P1 = P0 + Q1 / 3 * t_delta;
+			P2 = P3 - Q2 / 3 * t_delta;
+
+			break;
+		}
+
+		// Increment time
+		t += dt;
+
+		// Set new values to old values
+		curr = next;
+	}
+
+	// Initial point on PS2a
+	// Preimages integrate onto PS1 inits, at which point a kick can be performed
+	curr = ps2ainits[start_bin];
+
+	// Start with t = 0
+	t = 0;
+
+	// Integrate from PS2a to PS2b and snap to Bezier curve at each step
+	while (true) {
+		// Integrate one step forward
+		array3 next = rk4(curr, dt, &hindmarsh_rose::hr_dynamics, neuron);
+
+		// Move time forward
+		t += dt;
+
+		// Check if PS2b has been crossed
+		if (t >= t_delta || crossed(curr.get(0), next.get(0), curr.get(1), next.get(1), 1, verts2b)) {
+			// Store bezier position
+			save_datum(t, next, bezier_file);
+
+			// Break out of loop
+			break;
+
+			// No plane has been crossed
+		} else {
+			// Normalized Bezier time
+			double t_norm = t / t_delta;
+			double t_nrev = 1 - t_norm;
+
+			// Polynomials (1-t)^3, t(1-t)^2, t^2(1-t), and t^3
+			double P0C = t_nrev * t_nrev * t_nrev;
+			double P1C = t_nrev * t_nrev * t_norm;
+			double P2C = t_nrev * t_norm * t_norm;
+			double P3C = t_norm * t_norm * t_norm;
+
+			// Corresponding point on Bezier curve
+			array3 PBC = P0 * P0C + 3 * P1 * P1C + 3 * P2 * P2C + P3 * P3C;
+
+			// Store bezier position
+			save_datum(t, PBC, bezier_file);
+
+			// Set new values to old values
+			curr = PBC;
+		}
+	}
+
+	// Close files
+	bezier_file.close();
+	system_file.close();
+
 	return;
 }

@@ -40,7 +40,8 @@ int main(int argc, char* argv[]) {
 	// SIMULATION FLAGS
 	bool RUN_ONE_CUPOLET  = false;
 	bool RUN_ALL_CUPOLETS = false;
-	bool GENERATE_IMPULSE = true;
+	bool GENERATE_IMPULSE = false;
+	bool COMPARE_PATHS    = true;
 	
 	// Simulation data
 	unsigned int PERIODS = 1;  // Number of periods to run a cupolet
@@ -92,8 +93,6 @@ int main(int argc, char* argv[]) {
 		establish_microcontrol(hr, direc, bin_rn_direc, dt, bins);
 		establish_macrocontrol(bin_rn_direc);
 	}
-
-	
 	
 	// Run a single cupolet and save to a shared file
 	if (RUN_ONE_CUPOLET) {
@@ -116,8 +115,6 @@ int main(int argc, char* argv[]) {
 		create_cupolet(hr, dt, bins, bin_start[CUPOLET_INDEX], PERIODS, ctrl, direc, bin_rn_direc);
 		//create_time_series_from_impulse(hr, dt, bins, bin_start[CUPOLET_INDEX], ctrl, direc, bin_rn_direc);
 	}
-	
-	
 	
 	// Run all cupolets and save to nested structure in fundamental_cupolets
 	if (RUN_ALL_CUPOLETS) {
@@ -185,22 +182,35 @@ int main(int argc, char* argv[]) {
 		
 	}
 	
-	
-	
 	// Generate all impulses for each starting bin on PS2a
 	if (GENERATE_IMPULSE) {
 		// Create save directories for impulse data
 		check_direc(bin_rn_direc + "/bezier_impulses");
 		check_direc(bin_rn_direc + "/bezier_impulses/kick");
 		check_direc(bin_rn_direc + "/bezier_impulses/no_kick");
+		check_direc(bin_rn_direc + "/bezier_impulses/no_kick_no_bezier");
 		
 		// Loop over sarting bins
 		for (unsigned int k = 0; k < bins; k++) {
-			bezier_impulse(hr, dt, bins, k, DENSITY, true , direc, bin_rn_direc);
 			bezier_impulse(hr, dt, bins, k, DENSITY, false, direc, bin_rn_direc);
+			bezier_impulse(hr, dt, bins, k, DENSITY, true , direc, bin_rn_direc);
 		}
 	}
-	
+
+	// Generate path dynamical system takes and Bezier path for each starting bin on PS2a
+	if (COMPARE_PATHS) {
+		// Create save directories for path data
+		check_direc(bin_rn_direc + "/path_comparisons");
+		check_direc(bin_rn_direc + "/path_comparisons/bezier_path");
+		check_direc(bin_rn_direc + "/path_comparisons/system_path");
+
+		// Loop over starting bins
+		for (unsigned int k = 0; k < bins; k++) {
+			compare_paths(hr, dt, bins, k, direc, bin_rn_direc);
+		}
+	}
+
+
 	//create_linked_cupolet(hr, dt, bins, bin_start[k], bin_start[k]+20, 0.0001, ctrl, direc, bin_rn_direc);
 	
 	//save_time_series(hr, dt, bins, bin_start[k], ctrl, direc, bin_rn_direc);
